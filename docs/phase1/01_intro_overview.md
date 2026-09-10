@@ -3,10 +3,13 @@
 ## Phase 1 -Initial Plan and Requirement Gathering Document
 
 **Khalifa University -Department of Computer Science**
+
 **COSC 336-Introduction to Software Engineering-Fall2026**
 
 **Prepared by:** Group 5 – Mohammed Alketbi, Abdulla, Mohammed Al Ali, Mubarak
+
 **Prepared for:** Eng. Dina Atia, Lab Instructor
+
 **Date:** September 2026
 
 
