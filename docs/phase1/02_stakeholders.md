@@ -38,3 +38,24 @@ Act as the project client and evaluators. They review project documentation, Git
 ### 4.1.11 Group 5 Development Team
 Plans, designs, develops, tests and documents the system.
 
+
+## 4.2 Stakeholder Mapping
+
+The following table presents an initial mapping of stakeholders to the features they use, the information they require, their permissions, their responsibilities and possible approval decisions.
+
+Exact authorization and approval rules will be refined during later requirement analysis because the project description does not define every university policy or approval boundary in detail.
+
+| Stakeholder | Features They Use | Data They Need | Permissions | Responsibilities | Approval Decisions |
+|---|---|---|---|---|---|
+| Department Representatives | Asset search, surplus publication, requests, request tracking, transfer tracking | Department assets, available resources, request and transfer status | View relevant resources and perform permitted departmental actions | Represent departmental needs and coordinate resource sharing | May participate in departmental request or transfer decisions where authorized |
+| Asset Custodians | Asset registration, asset updates, inspections, transfer and life-cycle tracking | Asset details, condition, location, custody, maintenance and transfer history | Create or update assets under their responsibility | Maintain accurate asset records and custody information | May confirm release or receipt where authorized |
+| Requesters | Search, filtering, AI matching, request submission, reservation and status tracking | Asset availability, specifications, quantity, condition, location and request status | Search resources and submit permitted requests | Describe resource requirements accurately and monitor requests | Normally no high-level approval authority unless separately assigned |
+| Administrators | User management, workflow administration, reports and operational monitoring | Users, assets, requests, transfers, approvals and activity records | Administrative permissions based on assigned role | Support system operation and administrative workflows | May perform administrative approvals where explicitly authorized |
+| Procurement Officers | Resource search, request review, cost comparison and reports | Resource requests, available assets, values and relevant costs | View procurement-related information | Consider internal reuse before unnecessary new purchases | Procurement decisions remain subject to university procedures |
+| Finance Officers | Financial reports and cost/savings analysis | Asset values, repair cost, transfer cost and estimated savings | Access authorized financial information | Review the financial effects of resource decisions | Financial approval authority depends on university policy |
+| Maintenance Staff | Defect reporting, inspection, maintenance and repair tracking | Condition, defect information, repair history, status and cost | Update assigned maintenance and inspection records | Inspect, maintain and repair resources and record results | May recommend maintenance-related actions; high-impact actions require authorized approval |
+| Sustainability Officers | Sustainability dashboard, reports and recommendation review | Reuse, repair, waste-diversion and carbon information | View sustainability information and reports | Monitor environmental outcomes and sustainability indicators | May advise on sustainable actions |
+| System Administrators | Access control, security, configuration and audit monitoring | User roles, logs, configuration and technical status | Elevated technical administration access | Maintain secure and reliable operation of the platform | Technical administration decisions |
+| Course Instructor / Lab Instructor | Documentation review, GitHub history, testing evidence and demonstrations | Requirements, designs, commits, test results and project documentation | Review project artefacts | Evaluate the project and provide academic feedback | Academic evaluation and acceptance decisions |
+| Group 5 Development Team | GitHub, development, documentation, design and testing tools | Requirements, source code, designs, test data and feedback | Development access to project resources | Design, implement, test and document the solution | Technical design decisions within project requirements |
+
