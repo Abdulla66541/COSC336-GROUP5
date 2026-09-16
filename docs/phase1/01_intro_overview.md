@@ -126,3 +126,35 @@ Academically, this is a running project for the COSC 336 course where the studen
 | Operational | One searchable catalogue of all assets; faster match; clear approval process; history that follows an asset. |
 | Organisational | Equitable distribution of assets between departments; contributes to sustainability goals of university. |
 | Academic | Practical experience of a full asset lifecycle and responsible AI integration skills for team members. |
+
+
+## 3.7 Scope of the Project
+
+### 3.7.1 In Scope
+
+- User accounts, authentication and role-based access control for nine defined roles; departments management.
+- Registration of assets with complete information, status management and assistance in classification from the AI.
+- Marketplace for surplus inventory with searching and filtering options.
+- Submit requests, reserve assets, check their status.
+- AI semantic matching with scores, ranking, reasons and possibility to override the result.
+- Approvals and transfers including processes of donation, recycling and disposal.
+- Asset's life-cycle history and maintenance/repair tracking.
+- Sustainability recommendations, indicators and dashboard.
+- LLM assistance, notifications, standard and AI-powered reports.
+- Engineering deliverables: plan, feasibility study, requirements, design (architecture, UML, DFD, mockups), code, tests, final report and demonstration.
+
+### 3.7.2 Out of Scope
+
+- Connection to live ERP, financial, purchasing or identification systems of the university.
+- Real transactions such as payments, purchase orders and invoices.
+- Hardware, i.e. barcode/RFID scanners and IoT devices.
+- Training machine learning algorithms from scratch.
+- Interaction with organizations outside the university.
+- Legally binding sustainability accounting, all numbers should be marked as estimates.
+- Support multi-language interface, mobile applications, offline mode.
+
+### 3.7.3 Possible Future Enhancements
+
+- Demand prediction for more efficiency of surplus asset utilization.
+- Procurement integration that automatically searches for alternative inventory within the organization.
+- Barcode/QR scanning and support Arabic language.
