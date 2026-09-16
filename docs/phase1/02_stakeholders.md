@@ -1,4 +1,4 @@
-# 4 Stakeholder Analysis and Current Process
+# 4. Stakeholder Analysis and Current Process
 
 This section outlines the key stakeholders for the proposed system, their roles and permissions, and provides a snapshot of the current process without the integrated system.
 The current-process analysis below is not fully detailed in the project brief, so is to be viewed as a preliminary understanding that may be further developed later.
