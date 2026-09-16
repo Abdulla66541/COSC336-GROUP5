@@ -94,3 +94,35 @@ Academically, this is a running project for the COSC 336 course where the studen
 - **O3** – Determine and calculate sustainability metrics (number of avoided purchases, savings, re-use rate, increased lifespan, waste diverted, estimated CO₂ reduction).
 - **O4** – Compare the classic and AI-enhanced approaches explicitly in documentation.
 - **O5** – Apply professional practice in all eight phases of software life cycle as reflected in regular individual commits on GitHub.
+
+## 3.4 Project Constraints
+
+| Constraint | Description |
+|---|---|
+| Budget | No budget; only free or educational tier products and AI services are allowed. |
+| Timeline | One semester with fixed 8 phases; deadlines provided by the course. |
+| People | Four students working part-time; no help from outside people. |
+| Data | No real university data; only synthetic sample data which means limitations in AI accuracy claims. |
+| Technology | No integration with real university systems; local login; external or open-source AI model. |
+| Process | Using Git/GitHub and committing changes by individual authors (10% of each phase mark). |
+| Integrity | Following course policy on AI; no collaboration with any other group. |
+
+## 3.5 Assumptions
+
+- Instructors are a client who decides requirements and accept the system.
+- Departments are willing to publish excesses and think about transfer rather than purchase something new.
+- It is possible to define common category list and unique ID system for prototype.
+- Free-tier services of AI stay available; otherwise the system switches to keyword search and rules.
+- Sustainability numbers are estimated using average values from literature and uncertainties of estimation are specified.
+- User has a browser; mobile application is not required.
+- All four members are accessible and commit via their own Git/GitHub account.
+
+## 3.6 Expected Benefits
+
+| Category | Benefit |
+|---|---|
+| Financial | Reduction in duplications; lower costs of storage and waste removal; savings can be measured. |
+| Environmental | Increased longevity of assets; higher share of reuse and recycling; reduction of amount in landfills and embodied carbon footprint. |
+| Operational | One searchable catalogue of all assets; faster match; clear approval process; history that follows an asset. |
+| Organisational | Equitable distribution of assets between departments; contributes to sustainability goals of university. |
+| Academic | Practical experience of a full asset lifecycle and responsible AI integration skills for team members. |
