@@ -57,3 +57,40 @@ It comes as no surprise that the lack of such an approach leads to duplication o
 Also, current solutions suffer from the rigidity of keywords and fixed categories. An application for "laboratory seating" will never lead to the discovery of an "lab bench stool", although these two are actually one item.
 
 Our solution solves these problems by providing the university with a single platform that makes surplus assets visible, matches the supply with the demand using a combination of strict criteria and semantic artificial intelligence, ensures that transfer of each asset passes predefined approval stages, gathers all life-cycle events in one place and quantifies the outcome of reuse and savings in terms of financial gains and emission reductions. All decisions are made by authorized users, artificial intelligence suggests.
+
+### 3.1 Summary Description of the Proposed System
+
+Two-tier, role-based web application with one database and one interface.
+
+**Classic tier (baseline):**
+1. **Asset registration & publication** – registration of assets with complete details and publication of surplus items in an internal marketplace.
+2. **Requesting & reservation of resources** – requesting resources and searching and filtering the available items, reserving them and monitoring their status.
+3. **Approvals & transfer management** – approvals workflow for releases, transfers, donations, recycling and disposals, recording any changes of custody and location.
+4. **Inspections & life-cycle tracking** – complete asset history and a maintenance component for defects, repairs and related costings.
+5. **User and access management** – authentication and role-based permissions and standard reports for all campus roles.
+
+**AI tier (extended):**
+1. **AI-driven resource matching** – matching of listings with requests using meaning matching with compatibility score, ranking and an explanation in plain language.
+2. **AI-assisted classification** – recommending the category, tags and missing details for new assets.
+3. **Sustainability optimisation** – recommending re-use, transfers, repairs, donations, recycling or disposing of assets and estimating their environmental impact.
+4. **LLM-powered assistant** – natural language search, requesting and questioning.
+5. **Generative AI reporting** – summaries of the activity and its financial and sustainability impact.
+
+All AI-generated decisions are recommendation only, final decisions are made by authorised users.
+
+### 3.2 Problem Description and Context
+
+The current university asset management system is focused on audits and keeping records rather than reusing. Where the reuse is practiced, it is done via emails and personal communication. There are three trends that render the situation timely for change: the need for reporting sustainability that becomes a legal requirement soon (in accordance with the UAE Net Zero 2050 strategy), the budget considerations and the availability of advanced large language models that can automatically match meanings, classify resources and generate reports.
+
+Academically, this is a running project for the COSC 336 course where the students implement the entire software life cycle and compare the deterministic, rule-based approach with the adaptive, AI-enhanced one.
+
+### 3.3 Business Objectives and Project Objectives
+
+**Business objectives**: reduce unnecessary procurement; increase asset lifespan; avoid waste going to landfills; keep the complete, auditable record of the whole lifecycle of assets; calculate financial and environmental impact of the processes and simplify them for non-technical employees.
+
+**Project objectives:**
+- **O1** – Implement the five classic functions using conventional software engineering.
+- **O2** – Implement the five AI functions with explanations, confidence levels, user override and fallback behaviour.
+- **O3** – Determine and calculate sustainability metrics (number of avoided purchases, savings, re-use rate, increased lifespan, waste diverted, estimated CO₂ reduction).
+- **O4** – Compare the classic and AI-enhanced approaches explicitly in documentation.
+- **O5** – Apply professional practice in all eight phases of software life cycle as reflected in regular individual commits on GitHub.
