@@ -326,7 +326,7 @@ Short interviews were prepared to understand how potential users currently deal 
 #### Interview 1 – Lab Technician
 
 **Role:** Lab Technician  
-**Date:** [add actual date]
+**Date:** 16/09/2026
 
 Questions focused on equipment tracking, damaged equipment, maintenance, and finding available assets.
 
@@ -340,7 +340,7 @@ Questions focused on equipment tracking, damaged equipment, maintenance, and fin
 #### Interview 2 – Department Administrator
 
 **Role:** Department Administrator / Secretary  
-**Date:** [add actual date]
+**Date:** 16/09/2026
 
 Questions focused on asset requests, approvals, department transfers, and record keeping.
 
@@ -354,7 +354,7 @@ Questions focused on asset requests, approvals, department transfers, and record
 #### Interview 3 – IT / Facilities Staff
 
 **Role:** IT or Facilities Staff  
-**Date:** [add actual date]
+**Date:** 16/09/2026
 
 Questions focused on asset condition, repairs, disposal, permissions, and sustainability.
 
