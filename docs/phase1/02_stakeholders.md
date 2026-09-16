@@ -1,4 +1,4 @@
-# 4. Stakeholder Analysis and Current Process
+# 4 Stakeholder Analysis and Current Process
 
 This section outlines the key stakeholders for the proposed system, their roles and permissions, and provides a snapshot of the current process without the integrated system.
 The current-process analysis below is not fully detailed in the project brief, so is to be viewed as a preliminary understanding that may be further developed later.
@@ -58,4 +58,46 @@ Exact authorization and approval rules will be refined during later requirement 
 | System Administrators | Access control, security, configuration and audit monitoring | User roles, logs, configuration and technical status | Elevated technical administration access | Maintain secure and reliable operation of the platform | Technical administration decisions |
 | Course Instructor / Lab Instructor | Documentation review, GitHub history, testing evidence and demonstrations | Requirements, designs, commits, test results and project documentation | Review project artefacts | Evaluate the project and provide academic feedback | Academic evaluation and acceptance decisions |
 | Group 5 Development Team | GitHub, development, documentation, design and testing tools | Requirements, source code, designs, test data and feedback | Development access to project resources | Design, implement, test and document the solution | Technical design decisions within project requirements |
+
+
+## 4.3 Current As-Is Process
+
+### 4.3.1 Surplus Assets
+A department may determine that an asset is surplus or underutilized and other departments may not be aware of its surplus or underutilized status.
+
+### 4.3.2 Resource Requests
+If a department requires a resource, it can either check locally or proceed with the department's procurement process. If there is no central visibility, the appropriate assets in other departments might be overlooked.
+
+### 4.3.3 Resource Matching
+If the proposed system is not implemented, there is no semantic matching between the request and available assets that is integrated with AI.
+
+### 4.3.4 Transfer and Approval
+If an appropriate asset is identified, the appropriate parties may need to arrange for approvals, asset transfers and location changes.
+
+### 4.3.5 Maintenance and Repair
+Maintenance activities can be recorded separately and this makes it difficult to see the full life of an asset.
+
+### 4.3.6 Donation, Recycling and Disposal
+When an asset is no longer useful, actions such as donation, recycling, retirement or disposal may be considered depending on its condition and university policy.
+
+
+## 4.4 Gaps Identified
+
+- Inadequate visibility of excess assets departmentally.
+- Appropriate resources might not be identified before new resources are purchased.
+- Resource matching can be done through verbal communication or precise descriptions.
+- The asset history might be broken up.
+- The information for maintenance and transfer may not be centralized.
+- Financial benefits of reusing are not necessarily measurable.
+- Environmental benefits might not always be monitored.
+- Lack of intelligent support for reuse, repair, transfer and recycling decisions.
+
+
+ ## 4.5 Section Summary
+
+Analysis of the stakeholders reveals that the proposed system is required to be usable by different stakeholders who have different responsibilities, information needs and levels of authority. So role-based access and well-defined approval boundaries are important aspects of the system.
+
+The current-process analysis focuses on the main issue that the project is tackling: useful resources could be available within the university but if they are not visible, coordinated and tracked through their life cycle, they may not be reused effectively.
+
+The proposed system aims to fill these gaps by integrating a structured asset-management and resource-exchange platform with AI-driven classification and semantic matching, sustainability recommendations, and natural-language interaction and reporting. Important approvals and high impact life cycle decisions still lie with human users.
 
