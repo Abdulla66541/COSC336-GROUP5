@@ -44,3 +44,16 @@ Specifically, it:
 - presents a preliminary project plan covering the timeline, milestones, methodology, team roles, dependencies, risks and resources for the remaining seven phases.
 
 The intended readers are the lab instructor and course instructor, who act as the client, and the four members of Group 5, who act as the development team. This document is the baseline for the Feasibility Study in Phase 2 and the detailed Requirements Analysis in Phase 3, and it will be updated as our understanding of the problem improves.
+
+
+# 2. Problem Statement
+
+The challenge does not lie in a lack of reusable resources in the University. The problem lies in the absence of a connection between already existing resources and departments that could use them.
+
+Currently, the information about assets is scattered. A conventional asset register may inform us about the ownership, location, purchase date, and write-off of a particular item. This kind of data can tell us nothing about the unused nature of the resource, the plan of another department to buy something similar, or the best sustainable practice regarding the reuse of this item.
+
+It comes as no surprise that the lack of such an approach leads to duplication of purchases, unused resources kept in storage for many years or just disposed of instead of redistribution, lack of maintenance and repair records due to changes in possession of the asset, manual search based on personal connections, and the inability to measure the savings and sustainability achieved through internal reuse practices.
+
+Also, current solutions suffer from the rigidity of keywords and fixed categories. An application for "laboratory seating" will never lead to the discovery of an "lab bench stool", although these two are actually one item.
+
+Our solution solves these problems by providing the university with a single platform that makes surplus assets visible, matches the supply with the demand using a combination of strict criteria and semantic artificial intelligence, ensures that transfer of each asset passes predefined approval stages, gathers all life-cycle events in one place and quantifies the outcome of reuse and savings in terms of financial gains and emission reductions. All decisions are made by authorized users, artificial intelligence suggests.
