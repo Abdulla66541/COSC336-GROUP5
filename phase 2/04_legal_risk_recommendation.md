@@ -105,3 +105,34 @@ The identified legal, ethical, policy, security, licensing, and safety constrain
 The project is considered feasible provided that synthetic data is used during development where possible, personal information is minimised, external AI services are used carefully, third-party licences and terms are respected, role-based permissions are enforced, and important asset-management decisions remain under authorised human control.
 
 A future deployment using real Khalifa University systems or operational data would require additional review of the university's applicable internal privacy, security, procurement, asset-management, and safety requirements.
+
+# 10. Risk Assessment
+
+The Phase 1 risk assessment identified several technical, schedule, data, and team-related risks. During the feasibility study, these risks are reviewed in more detail to determine how they could affect successful development of the system.
+
+The table below includes both preventive mitigation actions and contingency plans. Mitigation describes what the team will do to reduce the chance or impact of a risk, while the contingency plan describes what the team will do if the risk actually occurs.
+
+| Risk | Likelihood | Impact | Mitigation | Contingency Plan | Owner |
+|---|---|---|---|---|---|
+| Free-tier AI API quota is exhausted or the service becomes unavailable | Medium | High | Monitor API usage, minimise unnecessary calls, cache results where possible, and keep essential functions independent of AI. | Switch to another available free service or temporarily use rule-based/manual functionality so core system features continue working. | AI/Development Lead |
+| Synthetic data is not realistic enough to evaluate the system properly | Medium | High | Create a dataset containing different asset categories, conditions, departments, requests, transfers, and maintenance records based on the Phase 1 requirements. | Expand or revise the synthetic dataset and add missing edge cases before final testing. | Requirements Lead |
+| Team lacks enough experience with AI integration | Medium | High | Start AI experiments early, use simple approaches first, divide research between team members, and document successful examples. | Reduce AI complexity and implement a simpler solution such as basic embeddings, fixed prompts, or deterministic fallback rules. | AI/Development Lead |
+| AI produces inaccurate or irrelevant recommendations | Medium | High | Test the AI using different asset and request examples, display supporting information, and keep humans responsible for final decisions. | Disable or limit the unreliable AI feature and use manual search, filters, or rule-based recommendations until it can be improved. | AI/Development Lead |
+| Project scope becomes too large for the available time | Medium | High | Prioritise the Must-have requirements defined during requirements gathering and avoid adding unnecessary features. | Remove or postpone Should-have and Could-have features and concentrate development effort on the core system. | Project Coordinator |
+| Phases 7 and 8 have deadlines in the same week | High | High | Begin testing before Phase 7, prepare test cases during implementation, and avoid leaving final integration until the last week. | Freeze new features, focus only on fixing critical defects, and divide testing, documentation, and presentation work between team members. | Project Coordinator / All Members |
+| Phase 6 implementation takes longer than expected | Medium | High | Develop core functions incrementally during earlier phases and test individual components as they are completed. | Reduce lower-priority functionality and focus on completing a stable version of the Must-have features. | Development/Testing Lead |
+| A team member becomes temporarily unavailable | Medium | Medium | Maintain documentation, use regular GitHub commits, and ensure more than one member understands important project components. | Reassign urgent tasks between available members and adjust lower-priority work if necessary. | Project Coordinator |
+| GitHub conflicts, accidental deletion, or integration problems occur | Low | Medium | Commit frequently with meaningful messages, review changes before merging, and avoid editing the same section simultaneously. | Restore a previous Git version, resolve conflicts manually, and use commit history to recover lost work. | All Members |
+| External software, library, or AI-service terms change | Low | Medium | Check licences and service terms before depending on an external tool and avoid unnecessary vendor-specific dependencies. | Replace the affected component with an alternative library, model, or service that meets the project requirements. | Development Lead |
+| Sensitive information is accidentally included in AI requests | Low | High | Use synthetic data, minimise data sent to external services, and avoid including names, university IDs, or confidential information in prompts. | Stop sending affected data, remove it from test inputs where possible, review the integration, and change the application so only necessary non-sensitive fields are sent. | Development Lead |
+| Insufficient time remains for complete testing | Medium | High | Begin unit and functional testing during development and prepare test cases before Phase 7. | Prioritise testing of Must-have functions and high-risk workflows such as authentication, approvals, transfers, and AI recommendations. | Development/Testing Lead |
+
+## 10.1 Overall Risk Evaluation
+
+The project contains several risks, but none of the identified risks currently make the proposed system infeasible.
+
+The most important risks are the limited project schedule, dependence on free AI services, the quality of synthetic test data, AI accuracy, and the possibility that the planned scope becomes too large.
+
+These risks can be controlled by keeping the Must-have requirements as the main development priority, testing AI functions early, maintaining non-AI fallback options, preparing realistic synthetic data, and beginning testing before the final project phases.
+
+The team should review the risk table during each phase and update the likelihood, impact, mitigation, and contingency plans if project conditions change.
