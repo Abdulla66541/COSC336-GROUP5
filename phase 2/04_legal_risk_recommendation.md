@@ -90,13 +90,13 @@ If an AI service is unavailable or produces an unreliable result, essential syst
 
 ## 9.7 Course AI Policy
 
-The development and documentation of the project must follow the AI-use rules stated in the COSC 336 Assessment Details and any additional instructions provided by the instructor or lab engineer.
+AI functionality is a required part of the project. The system is expected to include AI-based resource matching, AI-assisted asset classification, sustainability recommendations, an LLM-powered assistant, and generative AI reporting.
 
-The team will follow any permissions, restrictions, or disclosure requirements stated in the course policy when using AI tools for project development or documentation.
+The use of AI tools during the preparation of coursework and documentation is a separate issue and must follow the COSC 336 Assessment Details and any instructions provided by the instructor or lab engineer.
 
-Each team member remains responsible for reviewing, understanding, and being able to explain the work submitted under their name.
+Each team member remains responsible for understanding and being able to explain the work submitted under their name.
 
-**Design response:** follow the COSC 336 Assessment Details and instructor instructions, comply with any required AI-use restrictions or disclosure requirements, and ensure that each team member understands their submitted contribution.
+**Design response:** implement the required AI functionality as part of the system while following the course rules concerning the use of AI tools during development and documentation.
 
 ## 9.8 Feasibility Conclusion
 
