@@ -12,7 +12,7 @@
 
 **Date:** September 2026
 
-**Version:** 0.1 (Draft)
+
 
 ---
 
