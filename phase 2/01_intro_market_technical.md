@@ -51,3 +51,31 @@ Phase 1 identified eleven stakeholder groups and mapped them to features, data a
 | Group 5 (developers) | Deliverable within the semester | Scope limited to Must requirements; free tools only |
 
 The common thread is that feasibility depends less on technology and more on keeping the workflow simpler than the current informal process. If using the system takes longer than sending an email, nobody will use it.
+
+# 3. Market Analysis
+
+## 3.1 Existing Solutions
+
+Asset management is a mature software category, so the first question is whether something already does what we propose. We looked at four types of existing solution.
+
+**Enterprise asset management (EAM) suites** such as SAP EAM and IBM Maximo are built for large organisations. They track ownership, location, purchase value, depreciation and maintenance schedules in depth, and integrate with finance and procurement. They are expensive to licence and implement, are designed around compliance and accounting rather than reuse, and do not include an internal marketplace or semantic matching between surplus and demand.
+
+**IT asset management (ITAM) tools** such as ServiceNow ITAM and Asset Panda focus on hardware and software inventory, check-in/check-out and audits. They are strong on tracking and reporting but again treat an asset as something to be accounted for, not something to be redistributed. Cross-department reuse is not a native workflow.
+
+**Open-source asset registers** such as Snipe-IT provide free inventory tracking with roles, custody assignment, maintenance logs and audit history. They prove that the classic layer of our system is standard, well-understood functionality that a small team can implement. They have no request/matching workflow, no sustainability metrics and no AI.
+
+**University surplus and reuse programmes.** Some universities run internal "surplus property" web pages or use platforms such as Warp It (UK) to list unwanted furniture and equipment for other departments to claim. These are the closest match to our idea. They typically work as simple listings with manual search; matching depends on the requester browsing, categories are fixed, and impact reporting (avoided purchases, waste diverted) is either manual or absent.
+
+## 3.2 Comparison
+
+| Solution type | Asset register | Internal marketplace | Semantic / AI matching | Sustainability metrics | Cost for KU |
+|---|---|---|---|---|---|
+| EAM suites (SAP, Maximo) | Yes, deep | No | No | Partial (depreciation, not reuse) | High licence + implementation |
+| ITAM tools (ServiceNow, Asset Panda) | Yes | No | No | No | Subscription per asset/user |
+| Open-source registers (Snipe-IT) | Yes | No | No | No | Free, self-hosted |
+| University surplus sites / Warp It | Basic listing | Yes, manual | No (keyword only) | Basic counts, often manual | Subscription or in-house |
+| **Proposed system** | Yes | Yes | Yes, with explanations | Yes, estimated and labelled | Free tools (prototype) |
+
+## 3.3 Conclusion
+
+No existing solution combines an asset life-cycle register, an internal reuse marketplace, meaning-based matching between supply and requests, sustainability recommendations and generated impact reporting. The pieces exist separately, which is reassuring for feasibility — the classic layer is proven technology — but the combination, and the AI layer in particular, is where the project adds value. The market gap is real, and it is also exactly the gap the course project is designed to explore: a conventional system extended with AI where AI is useful.
