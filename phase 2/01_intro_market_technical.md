@@ -79,3 +79,33 @@ Asset management is a mature software category, so the first question is whether
 ## 3.3 Conclusion
 
 No existing solution combines an asset life-cycle register, an internal reuse marketplace, meaning-based matching between supply and requests, sustainability recommendations and generated impact reporting. The pieces exist separately, which is reassuring for feasibility — the classic layer is proven technology — but the combination, and the AI layer in particular, is where the project adds value. The market gap is real, and it is also exactly the gap the course project is designed to explore: a conventional system extended with AI where AI is useful.
+# 4. Technical Feasibility
+
+## 4.1 Proposed Architecture
+
+The system will use a simple layered architecture, which is the most common and best-understood pattern for a web application of this size:
+
+- **Presentation layer** – a web front-end for all roles (forms for registration and requests, search and filter pages, approval screens, dashboards, the assistant chat window).
+- **Application layer** – business logic: validation, approval workflows, state changes (asset states, request states, transfer states), notifications, role checks.
+- **AI and analytics layer** – classification, semantic matching and ranking, sustainability recommendation, LLM assistant and report generation. Every function in this layer returns a recommendation plus a confidence level and an explanation, never a final decision.
+- **Data layer** – a relational database for users, departments, assets, categories, requests, matches, approvals, transfers, maintenance records, sustainability impacts, notifications, model versions and audit logs, plus a vector index for asset and request embeddings.
+
+The AI layer is deliberately separated so that if an AI service is unavailable, the application layer falls back to keyword search and rule-based recommendations and the system keeps working.
+
+## 4.2 Proposed Technology Stack
+
+| Component | Proposed choice | Why it is feasible |
+|---|---|---|
+| Back-end | Python with FastAPI (or Flask) | Team has Python experience from earlier courses; fast to build APIs; excellent AI library support |
+| Front-end | HTML/CSS/JavaScript, optionally React | Standard web skills; no build tooling required for the simple option |
+| Database | SQLite for development, PostgreSQL for the demo | Free, relational, well documented; PostgreSQL supports pgvector for embeddings |
+| AI – embeddings and LLM | Free-tier LLM API (e.g. an OpenAI/Gemini/Groq student or free tier) or an open-source model run locally (e.g. via Ollama) | Zero cost within quota; embeddings give semantic similarity; prompts with a fixed category list give classification |
+| Vector search | pgvector, or in-memory cosine similarity for the prototype dataset | Dataset is small (hundreds of items), so no specialised infrastructure is needed |
+| Authentication | Local username/password with hashed passwords and role table | No dependency on KU identity systems |
+| Version control | Git + GitHub | Required by the course; already set up |
+| Diagrams and design | draw.io / PlantUML | Free |
+| Hosting | Local machines for the demo; free-tier cloud (e.g. Render, Railway) optional | No budget needed |
+
+## 4.3 Integration
+
+The prototype integrates with no external university systems. Authentication, department lists and asset data are local. The only external dependency is the AI API, which is isolated behind the AI layer with a fallback. This removes the biggest technical risk in most enterprise projects — integration with legacy systems — at the cost of realism, which is acceptable for a prototype and stated as a limitation.
