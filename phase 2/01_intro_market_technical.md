@@ -109,3 +109,31 @@ The AI layer is deliberately separated so that if an AI service is unavailable, 
 ## 4.3 Integration
 
 The prototype integrates with no external university systems. Authentication, department lists and asset data are local. The only external dependency is the AI API, which is isolated behind the AI layer with a fallback. This removes the biggest technical risk in most enterprise projects — integration with legacy systems — at the cost of realism, which is acceptable for a prototype and stated as a limitation.
+
+## 4.4 Team Skills versus Required Skills
+
+| Skill needed | Current level in team | Gap and plan |
+|---|---|---|
+| Python web development | Intermediate | None significant; FastAPI documentation is enough |
+| Relational database design | Intermediate (from database course) | None; ER modelling is part of Phase 5 |
+| Front-end (HTML/CSS/JS) | Basic to intermediate | Keep the UI simple; use a CSS framework (e.g. Bootstrap) to save time |
+| Calling an LLM/embedding API | Basic | Short self-study in Phase 3; one member (Design and AI lead) builds a small proof of concept early |
+| Prompt design for classification and explanation | Basic | Iterate with the synthetic dataset in Phase 6; keep prompts in version control |
+| Git/GitHub | Basic, improving | Already operational after Phase 1 |
+| Testing (unit/integration) | Basic | Learn pytest basics; testing plan in Phase 7 |
+
+The only real gap is practical AI integration, and it is a bounded one: calling an embeddings endpoint, computing cosine similarity and prompting an LLM with a fixed set of categories are well-documented tasks. Building a small proof of concept before Phase 4 will confirm this and remove the uncertainty early.
+
+## 4.5 Hardware and Software Requirements
+
+Development needs only the team's laptops, a modern browser, Python 3, VS Code, Git and internet access for the AI API. Demonstration can run on one laptop. No servers, licences or special hardware are required.
+
+## 4.6 Technical Verdict
+
+**Technically feasible.** The classic layer uses standard, proven technology that the team already knows. The AI layer is achievable with free-tier services and a small dataset, provided that:
+
+1. a proof of concept for embeddings-based matching and LLM classification is completed before the design phase;
+2. the AI layer is isolated behind an interface with a rule-based fallback;
+3. the UI is kept simple and scope is limited to the Must requirements from Phase 1.
+
+The main technical risks — API quota, prompt quality on synthetic data and the team's limited AI experience — are addressed in Sections 8 and 10.
