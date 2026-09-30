@@ -1,43 +1,84 @@
 # 5. Financial (Economic) Feasibility
 
+The financial feasibility analysis is used to determine if the proposed system can be developed with the resources that are available to the project team and if the benefits of the proposed system are worth the cost.
 
-The financial feasibility analysis is used to determine if the Circular Campus system can be developed with the resources available to the project team, and if the expected financial benefits of the system are worth the cost.
+The direct monetary cost for the prototype for the semester is expected to be minimal since it will be developed by four students with existing laptops, university facilities, GitHub, free development tools, and free tier services.
 
-The direct monetary cost for the semester prototype is anticipated to be minimal: four students will be developing the system using existing laptops, University facilities, GitHub, open-source software, and free or educational service tiers as appropriate.
+## 5.1 Development and Infrastructure Cost
 
-The main potential financial benefit is cost avoidance. Making surplus and underutilized assets visible in each department could allow the university to use them rather than buying new items.
-
-
-## 5.1 Development Effort
-Although the students are not paid to develop the system as part of the course, development time is still an important project resource.
-
-The team assumes that about 120 hours of project work will occur per semester per team member.
+For planning purposes, the team assumes approximately 120 hours of work per member during the semester.
 
 | Item | Estimate |
 |---|---:|
 | Team members | 4 |
 | Estimated effort per member | 120 hours |
-| Total estimated development effort | 480 student-hours |
-| Direct labour cost for prototype | 0 AED |
+| Total estimated effort | 480 student-hours |
+| Direct student labour cost | 0 AED |
+| GitHub | 0 AED |
+| Development tools | 0 AED |
+| Database | 0 AED initially |
+| Web hosting | 0 AED initially |
+| AI services | 0 AED initially |
 
-This is a planning assumption and not a measured cost of 120 hours. It is added for a semester prototype to demonstrate the development effort required even though there is no direct salary cost for the semester prototype.
+The 120-hour estimate is a planning assumption rather than a measured value.
 
+The prototype can use mainly free tools and services. However, free tiers may include limits on storage, requests, tokens, processing time, or inactivity. If those limits are reached, the team can reduce usage, use local tools, or move to another suitable free alternative.
 
-## 5.2 Prototype Infrastructure Cost
-Most of the resources for creating the prototype can be found for free or through existing resources.
+## 5.2 Long-Term Cost
 
-If you are looking for a free solution for source code management and team collaboration, then you should consider using GitHub. You can also get free or low-cost web hosting, databases, development tools, and AI experimentation.
+Other costs would likely be introduced if the system would be adopted by Khalifa University in the future.
 
-| Resource | Expected Prototype Cost | Notes |
-|---|---:|---|
-| GitHub | 0 AED | Free plan is sufficient for the prototype |
-| Student laptops | 0 AED additional cost | Existing hardware will be used |
-| Development tools | 0 AED | Free or open-source tools can be used |
-| Database | 0 AED initially | Local or free-tier database service |
-| Web hosting | 0 AED initially | Local deployment or suitable free tier |
-| AI services | 0 AED initially | Free-tier or open-source options may be used |
-| University facilities | 0 AED additional cost | Existing laboratory and internet resources |
+Possible costs include:
 
-The free services are appropriate for prototype development, but are usually restricted. Database services might have storage or inactivity limits, hosting services may have computing limits and AI services may have request, token or rate limits.
+- production hosting;
+- data security and recovery;
+- cybersecurity and monitoring;
+- technical support;
+- software maintenance;
+- AI application development;
+- user training; and
+- integration with existing University systems.
 
-Once a free-tier limit is reached, the team can decrease the amount of use, use a local alternative, switch providers or use a different free service.
+The costs cannot currently be precisely determined due to the fact that the number of future users, the level of use of the system and the requirements for the production infrastructure are still unknown.
+
+## 5.3 Expected Financial Benefits
+
+The primary anticipated financial gain is the avoidance of unnecessary purchases through the reuse of resources that are already available in the university.
+
+Other potential benefits are:
+
+- reducing duplicate purchases;
+- reducing the number of assets required; and
+- making repairs rather than replacements of appropriate assets;
+- lowering the costs of disposal and storage; and
+- saving manpower hours in finding resources.
+
+Studies on university reuse programmes indicate that the costs of procurement and disposal can be reduced through internal redistribution. The savings of other universities are not necessarily a reliable indicator of Khalifa University's savings.
+
+## 5.4 Illustrative Cost-Saving Example
+
+The project team cannot access Khalifa University's actual procurement data at this time, and an accurate savings estimate cannot be determined.
+
+As an example, the team estimates that it is possible to re-use 5% of the equipment it buys.
+
+Suppose that the annual expenditure on equipment was hypothetically AED 500,000:
+
+**0.05 × 500,000 AED = 25,000 AED**
+
+This would be equivalent to 25,000 AED in foregone purchases.
+
+This is an indicative example only and not an actual expenditure or savings made by Khalifa University.
+
+## 5.5 Cost-Benefit Summary
+
+| Area | Cost / Benefit | Assessment |
+|---|---|---|
+| Student development | 480 student-hours | Significant effort but no direct salary cost |
+| Development tools | Very low | Free/open-source tools available |
+| Hosting and database | Very low | Free-tier or local options available |
+| AI services | Low but uncertain | Depends on free-tier limits |
+| Avoided purchases | Potential benefit | Depends on actual reuse |
+| Asset-life extension | Potential benefit | May delay replacement |
+| Reduced disposal/storage | Potential benefit | Depends on actual use |
+| Production maintenance | Unknown | Requires future analysis |
+
