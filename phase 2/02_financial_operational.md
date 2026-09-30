@@ -82,3 +82,53 @@ This is an indicative example only and not an actual expenditure or savings made
 | Reduced disposal/storage | Potential benefit | Depends on actual use |
 | Production maintenance | Unknown | Requires future analysis |
 
+## 5.6 Financial Feasibility Verdict
+
+The project is economically viable to be a prototype for a semester, since it can be created primarily by using existing hardware and free or low-cost services.
+
+It is not possible to calculate an ROI at the production level at this time without actual University procurement, maintenance, hosting, and usage data.
+
+The direct monetary cost of the prototype is low, so that even if a few purchases are avoided, the direct cost of the prototype can be more than the direct cost of the purchase.
+
+
+# 6. Operational Feasibility
+
+Operational feasibility is the assessment of the viability of the system to the intended users and adopters.
+
+The key stakeholders are the department representatives, asset custodians, requesters, administrators, procurement officers, finance officers, maintenance staff, and sustainability officers.
+
+## 6.1 Stakeholder Adoption
+
+| Stakeholder | Possible Issue | Mitigation |
+|---|---|---|
+| Department Representatives | Reluctance to release assets | Keep ownership and approval decisions under human control |
+| Asset Custodians | Extra data-entry work | Use simple forms and AI-assisted classification |
+| Requesters | Distrust of AI recommendations | Explain recommendations and keep normal search available |
+| Administrators | Too many approval steps | Use clear and simple workflows |
+| Procurement Officers | Reuse checks may slow purchasing | Make internal search and matching quick |
+| Finance Officers | Savings estimates may be unclear | Separate confirmed values from estimates |
+| Maintenance Staff | Extra recording work | Keep maintenance forms short and simple |
+| Sustainability Officers | Environmental estimates may be uncertain | Clearly explain assumptions |
+
+## 6.2 Main Operational Challenges
+
+Key challenges in operation are that of data entry, reluctance to share assets across departments, slow approval, inaccurate asset details, lack of trust in AI suggestions, and reluctance to alter current workflows.
+
+Simple interfaces, straightforward approval processes, easy-to-understand AI explanations, accurate status tracking, and human oversight of critical decisions can help mitigate these challenges.
+
+## 6.3 Training and Change Management
+
+Users should be given short training based on the role they are assigned to, depending on the tasks they do.
+
+Training should include:
+
+- gathering information; and
+- updating asset information;
+- reviewing approvals;
+- recording maintenance activities;
+- understanding financial and sustainability indicators; and
+Awareness of the limits of AI suggestions.
+
+The system should also be clear that AI is a tool for decision making and not a substitute for decisions made by authorised personnel.
+
+Feedback should be gathered while testing to make sure that confusing or inefficient workflows can be improved.
