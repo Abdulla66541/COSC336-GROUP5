@@ -132,3 +132,13 @@ Awareness of the limits of AI suggestions.
 The system should also be clear that AI is a tool for decision making and not a substitute for decisions made by authorised personnel.
 
 Feedback should be gathered while testing to make sure that confusing or inefficient workflows can be improved.
+
+## 6.4 Operational Feasibility Verdict
+
+If: The proposed system is operationally feasible;
+
+1. Data entry is easy and efficient;
+2. approval and ownership decisions are still under approved human control; and
+3. users are provided with the necessary training and guidance.
+
+If so, the proposed workflows should be feasible for the intended users and appropriate for further development.
