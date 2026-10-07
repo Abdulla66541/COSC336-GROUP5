@@ -36,7 +36,27 @@ The classification function shall support information from the asset title, desc
 
 The user shall be able to accept or correct the AI-generated classification. This ensures that AI assists the registration process while the final classification remains under human control.
 ### 4.15.2 Inputs and Outputs
+The AI-assisted asset classification function shall use information available during asset registration to generate classification suggestions.
 
+**Inputs:**
+
+- Asset title or name
+- Asset description
+- Technical specifications
+- Asset images, when available
+
+**Outputs:**
+
+- Recommended asset category
+- Recommended subcategory
+- Relevant tags
+- Material type
+- Identification of missing metadata
+- Classification confidence information
+
+The system shall display the generated outputs to the authorised user before the information is saved as the final asset classification. The user shall be able to review and correct the suggested values.
+
+The AI-generated classification shall be treated as a recommendation and shall not automatically become the final classification without user review.
 ### 4.15.3 Functional Requirements
 
 ## 4.16 Semantic Matching and Ranking
