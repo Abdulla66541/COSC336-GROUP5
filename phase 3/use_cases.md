@@ -58,3 +58,15 @@
 | Business rules | BR-01 (all required request fields must be completed before submission), BR-02 (request quantity must be a positive number), BR-03 (the required date must be valid), BR-04 (only an authenticated requester with the required permission may submit a request). |
 | Related FRs | FR-REQ |
 | Related NFRs | Security, usability, validation, and system availability requirements. |
+
+## UC-02 – Edit asset
+
+| Field | Description |
+|---|---|
+| **Name** | Asset Custodian (AC), Department Representative (DR) |
+| **Preconditions** | The user is logged in, the asset exists, and the user has permission to edit the asset. |
+| **Trigger** | The user selects the option to edit an existing asset. |
+| **Main flow** | 1. The user opens an existing asset record. <br> 2. The user selects Edit. <br> 3. The system displays the current asset information. <br> 4. The user changes one or more asset fields. <br> 5. The user submits the changes. <br> 6. The system validates the updated information. <br> 7. The system saves the valid changes. <br> 8. The system confirms that the asset was updated successfully. |
+| **Alternative flows** | **A1:** If required information is missing or invalid, the system identifies the problem and does not save the changes. <br><br> **A2:** If the user cancels before submitting, the system keeps the existing asset information unchanged. <br><br> **A3:** If the user does not have permission to edit the asset, the system denies the action. |
+| **Postconditions** | The valid changes are stored in the asset record. If the edit is cancelled or rejected, the original asset information remains unchanged. |
+| **Related FRs** | FR-AST |
