@@ -43,12 +43,18 @@
 
 | Field | Description |
 |---|---|
-| **ID** | UC-05 |
-| **Name** | Submit Request |
-| **Actor** | RQ (Requester) |
-| **Preconditions** | The requester is logged in and has permission to submit a resource request. |
-| **Trigger** | The requester selects the option to create a new resource request. |
-| **Main Flow** | 1. The requester opens the resource request form. 2. The system displays the required request fields. 3. The requester enters the category, purpose, specifications, quantity, preferred condition, urgency, location, and required date. 4. The system validates the entered information. 5. The requester submits the request. 6. The system creates a unique request record. 7. The system assigns the request the **Submitted** status. 8. The system confirms that the request has been submitted. |
-| **Alternative Flows** | **A1. Missing required information:** The system identifies the missing fields and asks the requester to complete them. **A2. Invalid quantity:** The system rejects the request and asks the requester to enter a valid positive quantity. **A3. Invalid required date:** The system rejects the request and asks the requester to enter a valid date. **A4. User does not have permission:** The system denies submission and displays an appropriate access message. |
-| **Postconditions** | A valid resource request is stored in the system with a unique request ID and **Submitted** status. |
-| **Related FRs** | FR-REQ |
+| Use Case ID | UC-05 |
+| Name | Submit Request |
+| Primary actor | Requester (RQ) |
+| Secondary actor | AI Service (supports matching after submission) |
+| Goal | Allow a requester to submit a complete resource request so that the system can process and match it with available assets. |
+| Priority | Must |
+| Preconditions | 1. The user is logged in as an RQ. 2. The user has permission to submit resource requests. 3. The requester has the information required to complete the request. |
+| Trigger | The user clicks "Submit new request". |
+| Main flow | 1. The system shows the resource request form. 2. The user enters the category, purpose, specifications, quantity, preferred condition, urgency, location, and required date. 3. The system checks that all required fields are completed. 4. The system validates the entered values, including quantity and date. 5. The user submits the request. 6. The system creates a unique request ID. 7. The system sets the request status to "Submitted". 8. The system stores the request information for later search, matching, reservation, and approval processes. 9. The system confirms that the request was successfully submitted. |
+| Alternative flows | 2a. The user leaves a required field empty: the system highlights the missing field and asks the user to complete it. 3a. The quantity is invalid or not positive: the system rejects the value and asks the user to enter a valid quantity. 3b. The required date is invalid: the system asks the user to enter a valid date. 5a. The user cancels before submission: the system does not create the request and returns to the previous screen. |
+| Exceptions | E1. The system is unavailable: the request is not submitted and the user is informed to try again. E2. The request cannot be saved: the system displays an error and does not mark the request as submitted. |
+| Postconditions | Success: a valid request exists with a unique request ID and status "Submitted", and its information is available for later processing. Failure: no submitted request is created and any incomplete entry remains unsaved or as a draft according to the system behaviour. |
+| Business rules | BR-01 (all required request fields must be completed before submission), BR-02 (request quantity must be a positive number), BR-03 (the required date must be valid), BR-04 (only an authenticated requester with the required permission may submit a request). |
+| Related FRs | FR-REQ |
+| Related NFRs | Security, usability, validation, and system availability requirements. |
