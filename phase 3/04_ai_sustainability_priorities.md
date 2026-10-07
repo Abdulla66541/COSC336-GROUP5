@@ -46,11 +46,71 @@ The user shall be able to accept or correct the AI-generated classification. Thi
 
 ### 4.16.1 Description
 
+The system shall provide an AI-based semantic matching function that compares departmental resource requests with available asset listings. The function shall identify assets that may satisfy the request even when the wording of the request and asset description is different.
+
+The matching process shall consider the information available in both the request and the asset record. The system shall generate a compatibility score and rank the available assets according to their suitability for the request.
+
+AI-generated matches shall be presented as recommendations. The system shall not automatically approve, reserve, or transfer an asset based only on the AI-generated result.
+
 ### 4.16.2 Matching Factors
+
+The matching function shall consider the following factors when evaluating an asset against a resource request:
+
+| Factor | Description |
+|---|---|
+| Category Compatibility | The similarity between the requested category and the asset category. |
+| Purpose | How well the intended use of the asset matches the stated purpose of the request. |
+| Technical Specifications | Compatibility between requested specifications and available asset specifications. |
+| Quantity | Whether the available quantity is sufficient for the request. |
+| Condition | How well the asset condition matches the requested condition. |
+| Location | The suitability of the asset location in relation to the request location. |
+| Urgency | The ability of the asset to satisfy the required timeframe. |
+| Required Date | Whether the asset can be made available by the requested date. |
+| Transfer Cost | The estimated cost associated with moving the asset, when available. |
+| Repair Cost | The estimated cost required to make the asset suitable for reuse, when applicable. |
 
 ### 4.16.3 Ranking and Compatibility Score
 
+The system shall assign each AI-generated asset match a compatibility score from 0 to 100.
+
+A higher score shall indicate that the asset is considered more suitable for the request based on the available matching factors.
+
+The system shall provide a human-readable explanation of the main factors that contributed to each recommended match. The explanation should help the user understand why an asset was ranked highly.
+
+The system shall support ranking matches according to the following considerations:
+
+- Overall suitability
+- Request urgency
+- Transfer cost
+- Potential waste-diversion benefit
+- Estimated CO2 reduction
+
+The ranking shall be presented to the user as a recommendation. The user shall remain responsible for reviewing the available matches and deciding which asset to pursue.
+
 ### 4.16.4 Functional Requirements
+
+| Requirement ID | Requirement |
+|---|---|
+| FR-AI-16 | The system shall compare a resource request with available asset listings using the information contained in the request and asset records. |
+| FR-AI-17 | The system shall consider category compatibility when evaluating a potential asset match. |
+| FR-AI-18 | The system shall consider the stated purpose of the request when evaluating a potential asset match. |
+| FR-AI-19 | The system shall consider technical specification compatibility when evaluating a potential asset match. |
+| FR-AI-20 | The system shall consider the requested quantity and available asset quantity when evaluating a potential asset match. |
+| FR-AI-21 | The system shall consider asset condition when evaluating a potential asset match. |
+| FR-AI-22 | The system shall consider asset location and request location when evaluating a potential asset match. |
+| FR-AI-23 | The system shall consider request urgency when evaluating a potential asset match. |
+| FR-AI-24 | The system shall consider the required date when evaluating whether an asset can satisfy a request. |
+| FR-AI-25 | The system shall consider estimated transfer cost when sufficient cost information is available. |
+| FR-AI-26 | The system shall consider estimated repair cost when the asset requires repair and sufficient cost information is available. |
+| FR-AI-27 | The system shall assign a compatibility score between 0 and 100 to each generated asset match. |
+| FR-AI-28 | The system shall rank generated asset matches according to their calculated suitability for the request. |
+| FR-AI-29 | The system shall provide a human-readable explanation of the main factors contributing to a recommended asset match. |
+| FR-AI-30 | The system shall consider request urgency when ranking otherwise suitable asset matches. |
+| FR-AI-31 | The system shall consider transfer cost when ranking otherwise suitable asset matches. |
+| FR-AI-32 | The system shall consider potential waste-diversion benefit when ranking asset matches. |
+| FR-AI-33 | The system shall consider estimated CO2 reduction when ranking asset matches where an estimate is available. |
+| FR-AI-34 | The system shall display the ranked matches to the user before any reservation or transfer decision is made. |
+| FR-AI-35 | The system shall not automatically approve, reserve, or transfer an asset solely because it received a high AI compatibility score. |
 
 ## 4.17 Sustainable-Action Recommendation
 
