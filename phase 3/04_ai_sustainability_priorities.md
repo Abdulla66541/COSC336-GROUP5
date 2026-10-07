@@ -30,7 +30,11 @@ The system shall use the available asset information to generate classification 
 | FR-AI-11 | The system shall store the final user-approved classification in the asset record. |
 | FR-AI-12 | The system shall not automatically approve an AI classification as final without user review. |
 ### 4.15.1 Description
+The system shall provide an AI-assisted asset classification function for newly registered assets. The function shall analyse the information provided by the user and recommend an appropriate category, subcategory, tags, material type, and missing metadata.
 
+The classification function shall support information from the asset title, description, technical specifications, and available images. The recommended classification shall be shown to the user for review before it becomes part of the official asset record.
+
+The user shall be able to accept or correct the AI-generated classification. This ensures that AI assists the registration process while the final classification remains under human control.
 ### 4.15.2 Inputs and Outputs
 
 ### 4.15.3 Functional Requirements
