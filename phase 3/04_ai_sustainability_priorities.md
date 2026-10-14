@@ -1,3 +1,120 @@
+# 4. AI, Sustainability and Prioritisation
+
+## 4.15 AI-Assisted Asset Classification
+
+### 4.15.1 Description
+
+The system shall provide an AI-assisted asset classification function for newly registered assets. The function shall analyse the information provided by the user and recommend an appropriate category, subcategory, tags, material type, and missing metadata.
+
+The classification function shall support information from the asset title, description, technical specifications, and available images. The recommended classification shall be shown to the user for review before it becomes part of the official asset record.
+
+The user shall be able to accept or correct the AI-generated classification. This ensures that AI assists the registration process while the final classification remains under human control.
+
+### 4.15.2 Inputs and Outputs
+
+| Type | Information |
+|---|---|
+| Input | Asset title or name |
+| Input | Asset description |
+| Input | Technical specifications |
+| Input | Asset image, when available |
+| Output | Recommended category |
+| Output | Recommended subcategory |
+| Output | Relevant tags |
+| Output | Material type |
+| Output | Missing metadata |
+| Output | Classification confidence information |
+
+### 4.15.3 Functional Requirements
+
+| Requirement ID | Requirement |
+|---|---|
+| FR-AI-01 | The system shall accept an asset title or name as input to the AI classification function. |
+| FR-AI-02 | The system shall accept an asset description as input to the AI classification function. |
+| FR-AI-03 | The system shall use available technical specifications when generating an asset classification recommendation. |
+| FR-AI-04 | The system shall accept an asset image as an optional input when an image is available. |
+| FR-AI-05 | The system shall recommend an appropriate category for a newly registered asset using the available asset information. |
+| FR-AI-06 | The system shall recommend an appropriate subcategory when a suitable subcategory exists in the configured classification list. |
+| FR-AI-07 | The system shall recommend relevant tags for the asset to support searching and matching. |
+| FR-AI-08 | The system shall recommend a material type when sufficient information is available. |
+| FR-AI-09 | The system shall identify important asset metadata that is missing from the submitted information. |
+| FR-AI-10 | The system shall display the AI-generated classification results to the authorised user before the results are saved as the final asset classification. |
+| FR-AI-11 | The system shall allow an authorised user to accept the AI-generated classification suggestions. |
+| FR-AI-12 | The system shall allow an authorised user to modify the AI-generated category, subcategory, tags, or material type before saving the final classification. |
+| FR-AI-13 | The system shall record whether an AI classification recommendation was accepted or modified by the user. |
+| FR-AI-14 | The system shall save the user-approved classification information in the asset record. |
+| FR-AI-15 | The system shall not automatically save an AI-generated classification as the final classification without user review. |
+
+## 4.16 Semantic Matching and Ranking
+
+### 4.16.1 Description
+
+The system shall provide an AI-based semantic matching function that compares departmental resource requests with available asset listings. The function shall identify assets that may satisfy the request even when the wording of the request and asset description is different.
+
+The matching process shall consider the information available in both the request and the asset record. The system shall generate a compatibility score and rank the available assets according to their suitability for the request.
+
+AI-generated matches shall be presented as recommendations. The system shall not automatically approve, reserve, or transfer an asset based only on the AI-generated result.
+
+### 4.16.2 Matching Factors
+
+The matching function shall consider the following factors when evaluating an asset against a resource request:
+
+| Factor | Description |
+|---|---|
+| Category Compatibility | The similarity between the requested category and the asset category. |
+| Purpose | How well the intended use of the asset matches the stated purpose of the request. |
+| Technical Specifications | Compatibility between requested specifications and available asset specifications. |
+| Quantity | Whether the available quantity is sufficient for the request. |
+| Condition | How well the asset condition matches the requested condition. |
+| Location | The suitability of the asset location in relation to the request location. |
+| Urgency | The ability of the asset to satisfy the required timeframe. |
+| Required Date | Whether the asset can be made available by the requested date. |
+| Transfer Cost | The estimated cost associated with moving the asset, when available. |
+| Repair Cost | The estimated cost required to make the asset suitable for reuse, when applicable. |
+
+### 4.16.3 Ranking and Compatibility Score
+
+The system shall assign each AI-generated asset match a compatibility score from 0 to 100.
+
+A higher score shall indicate that the asset is considered more suitable for the request based on the available matching factors.
+
+The system shall provide a human-readable explanation of the main factors that contributed to each recommended match. The explanation should help the user understand why an asset was ranked highly.
+
+The system shall support ranking matches according to the following considerations:
+
+- Overall suitability
+- Request urgency
+- Transfer cost
+- Potential waste-diversion benefit
+- Estimated CO2 reduction
+
+The ranking shall be presented to the user as a recommendation. The user shall remain responsible for reviewing the available matches and deciding which asset to pursue.
+
+### 4.16.4 Functional Requirements
+
+| Requirement ID | Requirement |
+|---|---|
+| FR-AI-16 | The system shall compare a resource request with available asset listings using the information contained in the request and asset records. |
+| FR-AI-17 | The system shall consider category compatibility when evaluating a potential asset match. |
+| FR-AI-18 | The system shall consider the stated purpose of the request when evaluating a potential asset match. |
+| FR-AI-19 | The system shall consider technical specification compatibility when evaluating a potential asset match. |
+| FR-AI-20 | The system shall consider the requested quantity and available asset quantity when evaluating a potential asset match. |
+| FR-AI-21 | The system shall consider asset condition when evaluating a potential asset match. |
+| FR-AI-22 | The system shall consider asset location and request location when evaluating a potential asset match. |
+| FR-AI-23 | The system shall consider request urgency when evaluating a potential asset match. |
+| FR-AI-24 | The system shall consider the required date when evaluating whether an asset can satisfy a request. |
+| FR-AI-25 | The system shall consider estimated transfer cost when sufficient cost information is available. |
+| FR-AI-26 | The system shall consider estimated repair cost when the asset requires repair and sufficient cost information is available. |
+| FR-AI-27 | The system shall assign a compatibility score between 0 and 100 to each generated asset match. |
+| FR-AI-28 | The system shall rank generated asset matches according to their calculated suitability for the request. |
+| FR-AI-29 | The system shall provide a human-readable explanation of the main factors contributing to a recommended asset match. |
+| FR-AI-30 | The system shall consider request urgency when ranking otherwise suitable asset matches. |
+| FR-AI-31 | The system shall consider transfer cost when ranking otherwise suitable asset matches. |
+| FR-AI-32 | The system shall consider potential waste-diversion benefit when ranking asset matches. |
+| FR-AI-33 | The system shall consider estimated CO2 reduction when ranking asset matches where an estimate is available. |
+| FR-AI-34 | The system shall display the ranked matches to the user before any reservation or transfer decision is made. |
+| FR-AI-35 | The system shall not automatically approve, reserve, or transfer an asset solely because it received a high AI compatibility score. |
+
 ## 4.17 Sustainable-Action Recommendation
 
 ### 4.17.1 Description
@@ -38,7 +155,7 @@ The AI recommendation shall be presented to an authorised user for review. The s
 | FR-AI-40 | The system shall recommend transferring an asset when available information indicates that another department may reuse it. |
 | FR-AI-41 | The system shall recommend repair when the asset may be returned to service through repair. |
 | FR-AI-42 | The system shall recommend refurbishment when refurbishment may extend the useful life of the asset. |
-| FR-AI-43 | The system shall recommend donation when donation is an appropriate available option. |
+| FR-AI-43 | The system shall recommend donation when the asset is no longer required by the current department, remains suitable for use, and donation is identified as an available alternative to disposal. |
 | FR-AI-44 | The system shall recommend disassembly when component recovery is more suitable than continued use. |
 | FR-AI-45 | The system shall recommend recycling when other reuse, repair, refurbishment, donation, or disassembly options are not suitable and recycling is appropriate. |
 | FR-AI-46 | The system shall treat disposal as a last-option recommendation. |
@@ -179,7 +296,7 @@ The system shall not treat an AI-generated report as an authoritative record if 
 
 The system shall provide measurable sustainability indicators to evaluate the effect of resource reuse and asset life-cycle management.
 
-All sustainability figures produced by the system shall be treated as estimates unless they are directly derived from confirmed recorded values. The system shall store or display the assumptions used for estimated calculations.
+All sustainability figures produced by the system shall be treated as estimates unless they are directly derived from confirmed recorded values. The system shall display the assumptions used for estimated calculations.
 
 ### 4.21.1 Waste Diversion
 
@@ -338,10 +455,19 @@ The prioritisation protects the core functionality of the system. If schedule or
 | FR-SUS-23 to FR-SUS-26 – Estimated Carbon Reduction | Desirable | Carbon reduction provides useful sustainability information but depends on suitable emission factors and assumptions. |
 | FR-SUS-27 to FR-SUS-31 – Sustainability Uncertainty and Assumptions | Essential | Estimated sustainability values must be clearly identified and supported by their assumptions. |
 
-## 8.5 Priority Summary
+## 8.5 Future Requirements
+
+The following requirements are outside the core prototype scope and may be considered in a future version.
+
+| Requirement | Priority | Reason |
+|---|---|---|
+| Advanced demand forecasting | Future | Forecasting future resource demand is beyond the essential exchange workflow and would require additional historical data and model validation. |
+| Integration with real university systems | Future | Integration with real university systems would require access, approvals, system interfaces, security reviews, and additional testing beyond the prototype scope. |
+
+## 8.6 Priority Summary
 
 The prioritisation gives highest importance to the core asset-exchange workflow, security and accountability, essential AI capabilities, human oversight, and the main sustainability indicators.
 
 Desirable requirements such as advanced LLM assistant functionality, generative reporting, financial-savings analysis, and carbon-reduction analysis can be simplified if development time becomes limited.
 
-Future functionality identified during later project planning, such as advanced forecasting and external system integrations, should be implemented only after the Essential requirements are stable and tested.
+Future functionality such as advanced demand forecasting and integration with real university systems should only be implemented after the Essential requirements are stable and tested.
