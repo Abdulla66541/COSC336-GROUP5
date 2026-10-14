@@ -249,3 +249,44 @@ None. The prototype uses no special hardware. Barcode and RFID scanners are out 
 - Uploaded files are limited to 10 MB per file, in JPG, PNG or PDF format.
 - E-mail notifications use standard SMTP or an e-mail API.
 
+# 5. Other Non-Functional Requirements
+
+The limits stated below pertain to the prototype tested using synthetic data of up to 5,000 resources and 500 users.
+
+## 5.1 Performance Requirements
+
+- **NFR-01:** For no less than 95% of page requests the system will respond within 3 seconds when there are up to 50 concurrent users.
+- **NFR-02:** For at least 95% of search and filter queries the result will be returned within 2 seconds for 5,000 asset records.
+- **NFR-03:** For at least 90% of requests the AI match recommendations will be returned within 10 seconds.
+- **NFR-04:** In case the AI service call exceeds 15 seconds or is unsuccessful, the system will fallback to the keyword search or rules and will inform the user about the unavailability of AI results.
+- **NFR-05:** For at least 90% of requests an AI classification recommendation will be provided within 8 seconds following user input of the asset details.
+
+## 5.2 Safety Requirements
+
+- **NFR-06:** Transfer, donation, recycling or disposal operations cannot be performed by the system until authorised users confirm their intention to perform such operations in the confirmation dialog and the confirmation is recorded in the logs.
+- **NFR-07:** Assets tagged as safety-related (e.g. electrical equipment, assets dealing with hazardous chemicals or under high pressure) cannot be transferred until there is a record of the inspection of the asset and it has been passed successfully.
+
+## 5.3 Security Requirements
+
+- **NFR-08:** Only hashed passwords are going to be stored (using bcrypt or Argon2 algorithms).
+- **NFR-09:** The role and department permissions described in section 2.4 will be validated on the server side for every request and an invalid request will be blocked and logged.
+- **NFR-10:** Sessions are going to expire 30 minutes after being inactive.
+- **NFR-11:** Accounts are going to be blocked 15 minutes after 5 failed login attempts.
+- **NFR-12:** No passwords, API keys and similar credentials are going to be stored in the source control repository but read from the environment variables.
+- **NFR-13:** In the demonstration deployment mode all traffic between the browser and the server will use the HTTPS protocol.
+
+## 5.4 Privacy and Compliance Requirements
+
+- **NFR-14:** Requests sent to the external AI service will contain asset and request descriptions only, and shall not contain usernames, emails or any other personal information.
+- **NFR-15:** The system will store only necessary personal data (name, university email, department, role), and the data of the deactivated users shall be obscured while maintaining their identification in the audit log.
+
+## 5.5 Software Quality Attributes
+
+- **NFR-16 (Usability):** In the process of user acceptance testing at least 80% of users who make the resource request the first time should be able to submit a resource request in less than 5 minutes.
+- **NFR-17 (Explainability):** All the recommendations of the AI component will be accompanied by a confidence level and explanation of the key reasons influencing the AI decision making.
+- **NFR-18 (Availability):** In the course of demonstration and testing, the system will have to be available no less than 95% of time.
+- **NFR-19 (Maintainability):** The AI module will have to be encapsulated in a certain interface and could be easily changed to another AI service provider without having to change the application logic itself; in Phase 7 at least 60% of business-logic code will have to be covered by automated tests.
+- **NFR-20 (Portability):** The software will have to be compatible with Windows, macOS and Linux operating systems with Python 3.10 or higher and recent Chrome, Edge, and Firefox browsers.
+- **NFR-21 (Accessibility):** Text is going to follow WCAG 2.1 AA criteria, and registration of the asset, requests submissions and approvals will have to be available via keyboard only.
+- **NFR-22 (Data integrity):** Database will be possible to restore from a backup no older than 24 hours old, and audit log and life cycle entries will be append only.
+
