@@ -153,3 +153,29 @@ Legend: **Y** = allowed, **D** = allowed for one’s own department/assigned ite
 
 System Administrator doesn’t have routine access to the asset, request or financial data. This reduces the amount of the data accessible to the administrator having technical access (data minimisation). This permission matrix serves as the base while the real rules will be determined by the requirements in section 4.11.
 
+## 2.5 Business Rules
+
+The business rules are the operating principles of the university that need to be enforced by the system. These are not functional requirements themselves, but a lot of the functional requirements serve to enforce them. References to the business rules are made via ID.
+
+| ID | Rule |
+|---|---|
+| BR-01 | Each asset is associated with exactly one department, which owns it, and has exactly one person responsible for it as custodian. |
+| BR-02 | Only the Asset Custodian or Department Representative of the owning department, or the Administrator, can register and/or update the asset record. |
+| BR-03 | An asset can be published on the marketplace only if it is registered in the system, has its condition recorded, and is neither in maintenance nor in transfer. |
+| BR-04 | An asset can have only one unexpired reservation. A reservation that is not accepted expires after 7 days (configurable). |
+| BR-05 | An asset, while in the state In Maintenance or In Transfer, cannot be reserved, transferred, donated, recycled or disposed. |
+| BR-06 | The owner, custodian or location of an asset change only after a transfer is accepted by one of the authorised approvers of the owning department or by the Administrator. |
+| BR-07 | A person does not have the permission to approve his own request or transfer he requested. |
+| BR-08 | The transfer is completed only after the acceptance of receipt of the transferring party. A transfer not completed within 14 days is reported to the Administrator. |
+| BR-09 | The donation, recycling or disposal of an asset needs the reason to be entered and the approval of the Administrator. If the estimated value of the asset is above AED 5,000 (configurable), then the approval of the Finance Officer is additionally required. |
+| BR-10 | The disposal is a possible choice only after a user has reviewed other possible actions: reusing, transferring, repairing, refurnishing, donating, recycling; and recorded the reasons why they did not suit him. |
+| BR-11 | AI never accepts, denies, performs transfers, donates, recycles or disposes of an asset. AI's output is only recommendation. |
+| BR-12 | Every AI recommendation is stated with a confidence level and key factors, that form it. The user can accept it, reject or modify it. Every rejection and modification of recommendation is logged, with user and time. In case a high-impact recommendation is rejected, a justification is also logged. |
+| BR-13 | Life-cycle events and audits cannot be changed or deleted. Instead, the correction is recorded as an additional entry with a link to the original entry. |
+| BR-14 | Every creation and modification of an asset record, request, transfer, maintenance record, user's role is recorded in audit log with user, timestamp, previous value, and new value. |
+| BR-15 | The financial information (values, cost savings) is available only to those roles, specified in the permission matrix (Section 2.4). |
+| BR-16 | Only published listings are visible campus-wide. The complete listing of an unpublished asset is available only to the owning department and to Administrators. |
+| BR-17 | All sustainability and savings data is displayed as estimates, accompanied by the assumptions. |
+| BR-18 | Every user has at least one role and one owning department; permissions are union of the roles. Deactivated users cannot log in, but keep history of their past actions. |
+| BR-19 | Each request has to contain the category, the purpose, the number of assets, and the required date. If the required date passed without a fulfillment, the request expires. |
+
