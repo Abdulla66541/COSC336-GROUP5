@@ -69,7 +69,7 @@ All use cases except UC-20 need the user to be logged in (UC-20).
 
 #### UC-02 Edit asset
 
-| Field | Description |
+| **Field** | **Description** |
 |---|---|
 | Use case ID | UC-02 |
 | Primary actor | AC, DR |
@@ -77,7 +77,8 @@ All use cases except UC-20 need the user to be logged in (UC-20).
 | Preconditions | The user is AC or DR for the owning department. The asset exists and is not disposed. |
 | Trigger | The user opens an asset and clicks "Edit". |
 | Main flow | 1. The system shows the asset form with current values. 2. The user changes one or more fields. 3. The system checks the new values. 4. The user clicks "Save". 5. The system updates the asset. 6. The system records the old and new values in the history and audit log. |
-| Alternative flows | 3a. A value is invalid: the system highlights it. 4a. The user cancels: nothing changes. 5a. Someone else edited the asset in the meantime: the system shows the newer version and asks the user to reload. |
+| Alternative flows | 4a. The user cancels: nothing changes. |
+| Exception flows | 3a. A value is invalid: the system highlights it and does not save the changes. 5a. Someone else edited the asset in the meantime: the system shows the newer version and asks the user to reload. |
 | Postconditions | Success: the asset shows the new values and the old ones stay in the history. Failure: the asset is unchanged. |
 | Rules and FRs | BR-13, BR-14; FR-AST, FR-HST, FR-AUD |
 
