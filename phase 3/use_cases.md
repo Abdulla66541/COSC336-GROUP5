@@ -43,53 +43,98 @@
 Actor codes: DR Department Representative, AC Asset Custodian, RQ Requester, AD Administrator, FO Finance Officer, MS Maintenance Staff, SO Sustainability Officer, SA System Administrator. PO (Procurement Officer) uses UC-06 and UC-21.
 
 
-### UC-01 Register Asset
+## 7.3 Use Case Descriptions (UC-01 to UC-35)
+
+Actor codes: DR Department Representative, AC Asset Custodian, RQ Requester, AD Administrator, FO Finance Officer, MS Maintenance Staff, SO Sustainability Officer, SA System Administrator, PO Procurement Officer.
+All use cases except UC-20 need the user to be logged in (UC-20).
+
+---
+
+### Group A: Assets and Marketplace (UC-01 to UC-04, UC-06, UC-10)
+
+#### UC-01 Register asset
 
 | Field | Description |
 |---|---|
-| **Use case ID** | UC-01 |
-| **Name** | Register asset |
-| **Primary actor** | Asset Custodian (AC); Department Representative (DR) |
-| **Secondary actor** | AI Service (suggests a category) |
-| **Goal** | Add a new asset to the system so it can be tracked from the start. |
-| **Priority** | Must |
-| **Preconditions** | 1. The user is logged in as AC or DR. 2. The user belongs to the department that owns the asset. 3. The asset is not already in the system. |
-| **Trigger** | The user clicks "Register new asset". |
-| **Main flow** | 1. The system shows the registration form. 2. The user enters the name, category, tag number, condition, quantity and location, and can add photos. 3. The system checks the required fields and that the tag number is new. 4. The system asks the AI Service for a category and shows it with a confidence score. 5. The user accepts or changes the category. 6. The system saves the asset with a unique ID and status "Registered". 7. The system records the history and audit log entries. 8. The system shows a confirmation and offers to publish the asset. |
-| **Alternative flows** | 2a. The user is not finished: the system saves a draft. 3a. A required field is empty: the system highlights it and the user fixes it. 3b. The tag number already exists: the system shows the existing asset and the user cancels or corrects the number. 4a. The AI does not answer within 15 seconds: the user picks a category by hand. 5a. The user disagrees with the AI: the system saves the user's choice and keeps the AI suggestion in the log. |
-| **Exceptions** | E1. A photo is too large or the wrong type: the system rejects it and keeps the other data. E2. The system is down: the form data is kept so the user can try again. |
-| **Postconditions** | Success: the asset exists with a unique ID, status "Registered", and history and audit entries. It is not public yet. Failure: no asset is created, and any draft is kept. |
-| **Business rules** | BR-11 (the AI only suggests, the user decides), BR-12 (the suggestion, confidence and user choice are recorded), BR-13 (history cannot be changed), BR-14 (every change is in the audit log). |
-| **Related FRs** | FR-AST, FR-AI, FR-HST, FR-AUD |
-| **Related NFRs** | NFR-06 (confirm important actions), NFR-16 (easy to use), NFR-17 (AI is explained) |
-### UC-05 Submit Request
+| Use case ID | UC-01 |
+| Primary actor | AC, DR |
+| Secondary actor | AI Service |
+| Goal | Add a new asset to the system so it can be tracked from the start. |
+| Preconditions | The user is logged in as AC or DR for the owning department. The asset is not already in the system. |
+| Trigger | The user clicks "Register new asset". |
+| Main flow | 1. The system shows the registration form. 2. The user enters name, category, tag number, condition, quantity and location, and can add photos. 3. The system checks required fields and that the tag number is new. 4. The system asks the AI Service for a category and shows it with a confidence score. 5. The user accepts or changes the category. 6. The system saves the asset with a unique ID and status "Registered". 7. The system records the history and audit entries. 8. The system confirms and offers to publish the asset. |
+| Alternative flows | 2a. The user is not finished: the system saves a draft. 3a. A required field is empty: the system highlights it. 3b. The tag number already exists: the system shows the existing asset and the user cancels or corrects. 4a. The AI does not answer within 15 s: the user picks a category by hand. 5a. The user disagrees with the AI: the system saves the user's choice and keeps the suggestion in the log. |
+| Postconditions | Success: a new asset exists, not yet public. Failure: no asset is created. |
+| Rules and FRs | BR-11, BR-12, BR-13, BR-14; FR-AST, FR-AI, FR-HST, FR-AUD |
+
+#### UC-02 Edit asset
 
 | Field | Description |
 |---|---|
-| Use Case ID | UC-05 |
-| Name | Submit Request |
-| Primary actor | Requester (RQ) |
-| Secondary actor | AI Service (supports matching after submission) |
-| Goal | Allow a requester to submit a complete resource request so that the system can process and match it with available assets. |
-| Priority | Must |
-| Preconditions | 1. The user is logged in as an RQ. 2. The user has permission to submit resource requests. 3. The requester has the information required to complete the request. |
-| Trigger | The user clicks "Submit new request". |
-| Main flow | 1. The system shows the resource request form. 2. The user enters the category, purpose, specifications, quantity, preferred condition, urgency, location, and required date. 3. The system checks that all required fields are completed. 4. The system validates the entered values, including quantity and date. 5. The user submits the request. 6. The system creates a unique request ID. 7. The system sets the request status to "Submitted". 8. The system stores the request information for later search, matching, reservation, and approval processes. 9. The system confirms that the request was successfully submitted. |
-| Alternative flows | 2a. The user leaves a required field empty: the system highlights the missing field and asks the user to complete it. 3a. The quantity is invalid or not positive: the system rejects the value and asks the user to enter a valid quantity. 3b. The required date is invalid: the system asks the user to enter a valid date. 5a. The user cancels before submission: the system does not create the request and returns to the previous screen. |
-| Exceptions | E1. The system is unavailable: the request is not submitted and the user is informed to try again. E2. The request cannot be saved: the system displays an error and does not mark the request as submitted. |
-| Postconditions | Success: a valid request exists with a unique request ID and status "Submitted", and its information is available for later processing. Failure: no submitted request is created and any incomplete entry remains unsaved or as a draft according to the system behaviour. |
-| Business rules | BR-01 (all required request fields must be completed before submission), BR-02 (request quantity must be a positive number), BR-03 (the required date must be valid), BR-04 (only an authenticated requester with the required permission may submit a request). |
-| Related FRs | FR-REQ |
-| Related NFRs | Security, usability, validation, and system availability requirements. |
+| Use case ID | UC-02 |
+| Primary actor | AC, DR |
+| Goal | Correct or update the details of an existing asset. |
+| Preconditions | The user is AC or DR for the owning department. The asset exists and is not disposed. |
+| Trigger | The user opens an asset and clicks "Edit". |
+| Main flow | 1. The system shows the asset form with current values. 2. The user changes one or more fields. 3. The system checks the new values. 4. The user clicks "Save". 5. The system updates the asset. 6. The system records the old and new values in the history and audit log. |
+| Alternative flows | 3a. A value is invalid: the system highlights it. 4a. The user cancels: nothing changes. 5a. Someone else edited the asset in the meantime: the system shows the newer version and asks the user to reload. |
+| Postconditions | Success: the asset shows the new values and the old ones stay in the history. Failure: the asset is unchanged. |
+| Rules and FRs | BR-13, BR-14; FR-AST, FR-HST, FR-AUD |
 
-## UC-02 – Edit asset
+#### UC-03 Publish surplus asset
 
 | Field | Description |
 |---|---|
-| **Name** | Asset Custodian (AC), Department Representative (DR) |
-| **Preconditions** | The user is logged in, the asset exists, and the user has permission to edit the asset. |
-| **Trigger** | The user selects the option to edit an existing asset. |
-| **Main flow** | 1. The user opens an existing asset record. <br> 2. The user selects Edit. <br> 3. The system displays the current asset information. <br> 4. The user changes one or more asset fields. <br> 5. The user submits the changes. <br> 6. The system validates the updated information. <br> 7. The system saves the valid changes. <br> 8. The system confirms that the asset was updated successfully. |
-| **Alternative flows** | **A1:** If required information is missing or invalid, the system identifies the problem and does not save the changes. <br><br> **A2:** If the user cancels before submitting, the system keeps the existing asset information unchanged. <br><br> **A3:** If the user does not have permission to edit the asset, the system denies the action. |
-| **Postconditions** | The valid changes are stored in the asset record. If the edit is cancelled or rejected, the original asset information remains unchanged. |
-| **Related FRs** | FR-AST |
+| Use case ID | UC-03 |
+| Primary actor | DR, AC |
+| Secondary actor | AI Service, Notification Service |
+| Goal | Make an unused asset visible to other departments so it can be reused. |
+| Preconditions | The asset is registered and has no open request, reservation or disposal case. |
+| Trigger | The user clicks "Publish as surplus" on an asset. |
+| Main flow | 1. The system shows the publish form filled from the asset record. 2. The user checks title, condition, quantity, location and pickup notes. 3. The system asks the AI Service for a better title and keywords. 4. The user accepts or edits them. 5. The system checks for duplicate listings. 6. The user confirms publication. 7. The system sets the status to "Available" and shows the listing to authorised users. 8. The system records the action and notifies users who watch similar assets. |
+| Alternative flows | 3a. The AI does not answer within 15 s: the user writes the text by hand. 5a. A duplicate is found: the system shows it and the user cancels or continues. 6a. The user cancels: nothing is published. |
+| Postconditions | Success: the asset is listed and searchable. Failure: the asset keeps its old status. |
+| Rules and FRs | BR-11, BR-13, BR-14; FR-MKT, FR-AI, FR-NTF |
+
+#### UC-04 Withdraw listing
+
+| Field | Description |
+|---|---|
+| Use case ID | UC-04 |
+| Primary actor | DR, AC |
+| Goal | Take a published asset off the marketplace. |
+| Preconditions | The asset is published and the user belongs to the owning department. |
+| Trigger | The user clicks "Withdraw listing". |
+| Main flow | 1. The system shows the listing and any open requests. 2. The user gives a reason. 3. The system asks for confirmation. 4. The user confirms. 5. The system hides the listing and sets the asset status back to "In use". 6. The system notifies requesters with open requests. 7. The system records the action. |
+| Alternative flows | 1a. An approved transfer is in progress: the system blocks the withdrawal and explains why. 4a. The user cancels: the listing stays. |
+| Postconditions | Success: the listing is no longer visible. Failure: the listing stays. |
+| Rules and FRs | BR-06, BR-14; FR-MKT, FR-NTF |
+
+#### UC-06 Search and filter assets
+
+| Field | Description |
+|---|---|
+| Use case ID | UC-06 |
+| Primary actor | RQ and all users (including PO) |
+| Goal | Find an available asset quickly. |
+| Preconditions | The user is logged in. |
+| Trigger | The user types in the search box or opens the filters. |
+| Main flow | 1. The user enters keywords. 2. The user selects filters such as category, department, condition and location. 3. The system searches the published assets. 4. The system shows the results sorted by relevance with photo, name and status. 5. The user opens an asset to see its details. |
+| Alternative flows | 3a. Nothing is found: the system suggests removing filters or asking the assistant (UC-29). 3b. The search takes too long: the system shows a message and the user tries again. |
+| Postconditions | The user sees matching assets. No data changes. |
+| Rules and FRs | FR-SRC, FR-MKT; NFR performance (results in 3 s) |
+
+#### UC-10 Save asset to watchlist
+
+| Field | Description |
+|---|---|
+| Use case ID | UC-10 |
+| Primary actor | RQ |
+| Goal | Follow an asset or a search and get notified when something fits. |
+| Preconditions | The user is logged in. |
+| Trigger | The user clicks "Watch" on an asset or a saved search. |
+| Main flow | 1. The system shows the watch options (this asset, or this search). 2. The user picks one. 3. The system saves the watch. 4. The system confirms. 5. Later, when a matching asset is published or changes status, the system sends a notification (UC-23). |
+| Alternative flows | 2a. The user already watches it: the system offers to stop watching. 5a. The user turns notifications off: the watch stays but no message is sent. |
+| Postconditions | The watch is saved and appears in the user's list. |
+| Rules and FRs | FR-SRC, FR-NTF |
+
