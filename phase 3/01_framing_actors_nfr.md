@@ -179,3 +179,73 @@ The business rules are the operating principles of the university that need to b
 | BR-18 | Every user has at least one role and one owning department; permissions are union of the roles. Deactivated users cannot log in, but keep history of their past actions. |
 | BR-19 | Each request has to contain the category, the purpose, the number of assets, and the required date. If the required date passed without a fulfillment, the request expires. |
 
+## 2.6 Operating Environment
+
+The system is a web application used through a modern browser (current versions of Chrome, Edge and Firefox). The server runs on Python 3.10 or later on Windows, macOS or Linux, with SQLite for development and PostgreSQL for the demonstration. The prototype runs on a local machine or a free-tier cloud service and needs internet access only to reach the AI service.
+
+## 2.7 Design and Implementation Constraints
+
+- Only free or education-tier tools, libraries, hosting and AI services may be used.
+- The prototype is not integrated with real university systems. Authentication is local, and all data is synthetic.
+- The AI layer must sit behind an interface with a rule-based fallback so the system works without the AI service.
+- No personal data (names, e-mail addresses) may be sent to an external AI service.
+- Work is developed with Git and GitHub, with regular commits by each member.
+- The course policy on AI tools applies to the code and documentation.
+- All phases must be delivered by the course deadlines within one semester.
+
+## 2.8 Assumptions and Dependencies
+
+**Assumptions**
+
+- A free-tier LLM and embedding service remains available during the semester. If not, the fallback behaviour is used.
+- Synthetic data can represent the variety of real assets and requests well enough to demonstrate and test the system.
+- A shared category list and asset identifier scheme can be defined for the prototype.
+- Users have a modern browser and network access.
+
+**Dependencies**
+
+- The external LLM and embedding API (the only external service).
+- Published average emission and weight factors per asset category for sustainability estimates.
+- Instructor approval of this document before design (Phases 4–5) starts.
+
+# 3. External Interface Requirements
+
+## 3.1 User Interfaces
+
+The system has one web interface. After login, each user sees only the menu items allowed for their role (Section 2.4). The main screens are:
+
+- Login and account page.
+- Asset registration and edit form, with photo and document upload.
+- Marketplace listing page with search and filters.
+- Request form and "my requests" page.
+- Match recommendation review page (shows score, confidence and explanation).
+- Approval and transfer pages, including receipt confirmation.
+- Maintenance and inspection pages.
+- Asset history timeline.
+- Sustainability dashboard and report pages.
+- Assistant chat panel, available on every page.
+- Administration pages (users, roles, audit log, settings).
+
+All screens shall follow the same layout, put the main navigation in the same place, show validation errors next to the field that caused them, and offer a help link. The main workflows shall be usable with the keyboard only (see NFR-21).
+
+## 3.2 Hardware Interfaces
+
+None. The prototype uses no special hardware. Barcode and RFID scanners are out of scope, so asset IDs are entered manually.
+
+## 3.3 Software Interfaces
+
+| Interface | Direction | Purpose |
+|---|---|---|
+| Relational database (SQLite / PostgreSQL) | Application ↔ database | Stores users, departments, assets, categories, requests, matches, approvals, transfers, maintenance records, sustainability impacts, notifications, model versions and audit logs |
+| Vector index (pgvector or in-memory) | AI layer ↔ index | Stores embeddings of asset listings and requests for semantic matching |
+| External LLM and embedding API | AI layer → service → AI layer | Sends asset or request text (never personal data) and receives embeddings, categories, explanations, answers and report text |
+| File storage | Application ↔ storage | Stores asset photos and supporting documents |
+| Notification service | Application → users | Delivers in-app and e-mail notifications |
+
+## 3.4 Communications Interfaces
+
+- The browser communicates with the server over HTTP/HTTPS. Application programming interfaces use REST with JSON.
+- Calls to the external AI API use HTTPS with an API key kept in an environment variable, never in the repository.
+- Uploaded files are limited to 10 MB per file, in JPG, PNG or PDF format.
+- E-mail notifications use standard SMTP or an e-mail API.
+
