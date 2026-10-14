@@ -2,22 +2,45 @@
 
 ### 7.1 Use Case Catalogue
 
-| ID     | Use case            | Actor(s)         | Related FRs      |
-|--------|---------------------|------------------|-----------------|
-| UC-01  | Register asset      | AC, DR           | FR-AST          |
-| UC-02  | Edit asset          | AC, DR           | FR-AST          |
-| UC-03  | Publish surplus asset     | DR, AC          | FR-MKT          |
-| UC-04  | Withdraw listing    | DR, AC           | FR-MKT          |
-| UC-05  | Submit request      | RQ               | FR-REQ          |
-
-| UC-06 | Search and filter assets | RQ, All Users | FR-SRC |
-|-------|--------------------------|---------------|--------|
+| ID | Use case | Primary actor | Related FRs |
+|----|----------|---------------|-------------|
+| UC-01 | Register asset | AC, DR | FR-AST |
+| UC-02 | Edit asset | AC, DR | FR-AST |
+| UC-03 | Publish surplus asset | DR, AC | FR-MKT |
+| UC-04 | Withdraw listing | DR, AC | FR-MKT |
+| UC-05 | Submit request | RQ | FR-REQ |
+| UC-06 | Search and filter assets | RQ, all users | FR-SRC |
 | UC-07 | Reserve asset | RQ | FR-RSV |
 | UC-08 | Track request | RQ | FR-REQ |
 | UC-09 | Cancel request | RQ | FR-REQ, FR-RSV |
 | UC-10 | Save asset to watchlist | RQ | FR-SRC |
+| UC-11 | Approve or reject transfer | AD | FR-APR, FR-TRF |
+| UC-12 | Confirm receipt | RQ | FR-TRF |
+| UC-13 | Report defect | AC, RQ | FR-MNT |
+| UC-14 | Record repair | MS | FR-MNT |
+| UC-15 | View asset history | AC, AD | FR-HST |
+| UC-16 | Approve disposal | AD, FO | FR-DSP, FR-APR |
+| UC-17 | Create user | SA | FR-USR |
+| UC-18 | Assign role | SA | FR-USR |
+| UC-19 | Deactivate user | SA | FR-USR |
+| UC-20 | Log in | All users | FR-USR |
+| UC-21 | Generate report | AD, FO, SO | FR-RPT |
+| UC-22 | View audit log | SA, AD | FR-AUD |
+| UC-23 | Receive notification | All users | FR-NTF |
+| UC-24 | Schedule inspection | MS | FR-MNT |
+| UC-25 | Approve donation or recycling | AD | FR-DSP, FR-APR |
+| UC-26 | Classify asset (AI) | AC | FR-AI |
+| UC-27 | View, accept or override match | RQ, AC | FR-AI |
+| UC-28 | Review sustainability recommendation | SO | FR-AI, FR-SUS |
+| UC-29 | Ask the assistant | All users | FR-AI |
+| UC-30 | Generate AI report | AD, SO | FR-AI, FR-RPT |
+| UC-31 | View sustainability dashboard | SO, AD | FR-SUS |
+| UC-32 | Override an AI output | AC, AD, SO | FR-AI (BR-11, BR-12) |
+| UC-33 | Detect duplicate listings | AC | FR-AI, FR-MKT |
+| UC-34 | Predict maintenance need | MS | FR-AI, FR-MNT |
+| UC-35 | Submit AI feedback | All users | FR-AI |
 
-
+Actor codes: DR Department Representative, AC Asset Custodian, RQ Requester, AD Administrator, FO Finance Officer, MS Maintenance Staff, SO Sustainability Officer, SA System Administrator. PO (Procurement Officer) uses UC-06 and UC-21.
 
 
 ### UC-01 Register Asset
