@@ -108,7 +108,7 @@ The detailed sequence diagrams are maintained as separate diagrams.net/draw.io d
 
 ## 2.1 UC-26 – Classify Asset
 
-**Diagram file:** `images/UC-26.png`
+**Diagram file:** 
 
 **Primary actor:** Asset Custodian
 
@@ -177,158 +177,37 @@ The detailed sequence diagrams are maintained as separate diagrams.net/draw.io d
 
 ## 2.4 UC-29 – Ask the Assistant
 
-**Diagram file:** `images/UC-29.png`
-
-**Primary actors:** All Users
-
-**Secondary actor:** AI Service
-
-**Purpose:** Allow users to ask questions using natural language.
-
-**Main interactions:**
-
-1. The user enters a question.
-2. The system checks the user's permissions.
-3. Only information the user is permitted to see is retrieved.
-4. Personal information is removed before external AI processing where required.
-5. The AI produces an answer from the permitted system data.
-6. If no reliable answer is available, the assistant states that it cannot answer.
-7. If the AI service times out, the system uses the configured fallback.
-8. The interaction is logged.
-9. The answer is displayed.
-10. The assistant cannot approve transfers, dispose of assets, or perform other controlled actions.
+**Diagram file:** 
 
 ## 2.5 UC-30 – Generate AI Report
 
-**Diagram file:** `images/UC-30.png`
-
-**Primary actors:** Administrator, Sustainability Officer
-
-**Secondary actor:** AI Service
-
-**Purpose:** Generate a written summary from recorded system data.
-
-**Main interactions:**
-
-1. The user selects a report type and reporting period.
-2. The system retrieves sustainability figures and summary information.
-3. The AI service generates a draft summary.
-4. The system checks generated figures against the underlying data.
-5. Any mismatch is flagged.
-6. The draft and AI version information are logged.
-7. The report is marked as AI-generated and not reviewed.
-8. The authorised user reviews and edits the report.
-9. The report is marked as reviewed.
-10. The report cannot be formally shared before review.
+**Diagram file:** 
 
 ## 2.6 UC-31 – View Sustainability Dashboard
 
-**Diagram file:** `images/UC-31.png`
-
-**Primary actors:** Sustainability Officer, Administrator
-
-**Additional permitted viewers:** Finance Officer, Procurement Officer
-
-**Purpose:** View sustainability performance and trends.
-
-**Main interactions:**
-
-1. The user opens the sustainability dashboard.
-2. The system checks dashboard permission.
-3. SustainabilityService retrieves the requested period and scope.
-4. The system reads reuse events, repair records, asset values, and emission factors.
-5. Sustainability indicators are calculated.
-6. Missing emission factors result in “Not enough data”.
-7. Estimates and assumptions are marked.
-8. The figures are displayed.
-9. The user may export the dashboard view.
-
+**Diagram file:**
 ## 2.7 UC-32 – Override an AI Output
 
-**Diagram file:** `images/UC-32.png`
+**Diagram file:** `
 
-**Primary actors:** Asset Custodian, Administrator, Sustainability Officer
-
-**Purpose:** Allow an authorised user to replace an AI-generated recommendation with a human decision.
-
-**Main interactions:**
-
-1. The user selects “Change” on an AI suggestion.
-2. The system displays the override form.
-3. The user selects the final value and enters a reason.
-4. The system checks override permission.
-5. An unauthorised attempt is denied and logged.
-6. An authorised override is stored.
-7. The final value, reason, user, and time are recorded.
-8. The override is also added to the history/audit trail.
 
 ## 2.8 UC-33 – Detect Duplicate Listings
 
-**Diagram file:** `images/UC-33.png`
-
-**Primary actor:** Asset Custodian
-
-**Secondary actor:** AI Service
-
-**Purpose:** Detect possible duplicate marketplace listings before publication.
-
-**Main interactions:**
-
-1. The Asset Custodian publishes a listing.
-2. The system sends the new listing information to the duplicate-detection function.
-3. The system compares the new listing with existing listings.
-4. Similar listings and similarity scores are returned.
-5. The system warns the user if a possible duplicate is found.
-6. The user may cancel or continue.
-7. Borderline results are left for human decision.
-8. If the AI service is unavailable, the duplicate check is skipped and the user is informed.
-
+**Diagram file:** 
 ## 2.9 UC-34 – Predict Maintenance Need
 
-**Diagram file:** `images/UC-34.png`
+**Diagram file:** 
 
-**Primary actor:** Maintenance Staff
-
-**Secondary actor:** AI Service
-
-**Purpose:** Identify assets with a higher likelihood of requiring maintenance.
-
-**Main interactions:**
-
-1. Maintenance Staff opens the maintenance forecast.
-2. The system retrieves asset age, condition, repair history, and inspection information.
-3. The system sends the available information to the AI service.
-4. The AI returns a ranked list of maintenance risks and reasons.
-5. The output is logged.
-6. The list is displayed to Maintenance Staff.
-7. The user may open an asset and schedule an inspection.
-8. If there is insufficient data, the system displays “Not enough data”.
-9. If the AI is unavailable, the system falls back to normal inspection scheduling.
 
 ## 2.10 UC-35 – Submit AI Feedback
 
-**Diagram file:** `images/UC-35.png`
-
-**Primary actor:** Any User
-
-**Purpose:** Allow users to give feedback on an AI result.
-
-**Main interactions:**
-
-1. The user selects “Was this helpful?”.
-2. The system shows rating and comment options.
-3. The user submits a rating and optional comment.
-4. The system checks for duplicate feedback.
-5. Existing duplicate feedback is not stored twice.
-6. New feedback is saved against the relevant AI output.
-7. The user receives confirmation.
-8. Save failures result in an error and retry option.
+**Diagram file:** 
 
 # 3. Class Diagram
 
 ## 3.1 AI Module
 
-**Diagram file:** `images/AI-Class-Diagram.png`
+**Diagram file:** 
 
 The AI module contains the main classes responsible for controlled interaction with AI services.
 
@@ -362,7 +241,7 @@ The AI module contains the main classes responsible for controlled interaction w
 
 ## 3.2 AI Functions and Sustainability
 
-**Diagram file:** `images/AI-Sustainability-Class-Diagram.png`
+**Diagram file:** 
 
 The main application services are:
 
@@ -406,8 +285,7 @@ The main application services are:
 
 ## 4.1 AI Match Review
 
-**Diagram/image file:** `images/UI-AI-Match.png`
-
+**Diagram/image file:** 
 The AI match-review page shall show:
 
 - ranked assets
@@ -421,8 +299,7 @@ The AI match-review page shall show:
 
 ## 4.2 Sustainability Recommendation
 
-**Diagram/image file:** `images/UI-Sustainability-Recommendation.png`
-
+**Diagram/image file:** 
 The screen shall show:
 
 - recommended action
@@ -435,8 +312,7 @@ The screen shall show:
 
 ## 4.3 Assistant
 
-**Diagram/image file:** `images/UI-Assistant.png`
-
+**Diagram/image file:** 
 The assistant interface shall show:
 
 - user question
@@ -447,7 +323,7 @@ The assistant interface shall show:
 
 ## 4.4 AI Report Review
 
-**Diagram/image file:** `images/UI-AI-Report.png`
+**Diagram/image file:** 
 
 The report screen shall show:
 
@@ -463,8 +339,7 @@ The report screen shall show:
 
 ## 4.5 Sustainability Dashboard
 
-**Diagram/image file:** `images/UI-Sustainability-Dashboard.png`
-
+**Diagram/image file:** 
 The dashboard shall show:
 
 - assets reused
@@ -481,7 +356,7 @@ The dashboard shall show:
 
 ## 4.6 Duplicate Warning and Maintenance Forecast
 
-**Diagram/image file:** `images/UI-Duplicate-Maintenance.png`
+**Diagram/image file:** 
 
 The interface shall show:
 
