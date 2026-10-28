@@ -386,23 +386,3 @@ The interface shall show:
 | AI Module Class Diagram | All AI Use Cases | FR-AI-X-05 to FR-AI-X-17 |
 | AI Module Class Diagram | Privacy and performance constraints | NFR-04, NFR-14 |
 
-# 6. Check Before You Commit
-
-- [ ] The Process 6.0 Level 1 DFD is complete and readable.
-- [ ] The Process 7.0 Sustainability DFD is complete and readable.
-- [ ] UC-26 to UC-35 sequence diagrams are complete.
-- [ ] Each sequence diagram has the correct actor and system interactions.
-- [ ] The AI class diagram matches the shared AI architecture.
-- [ ] The sustainability class diagram matches the sustainability data model.
-- [ ] The UI mockups represent the relevant AI and sustainability workflows.
-- [ ] The AI output log stores the required AI metadata.
-- [ ] AI overrides and feedback are traceable.
-- [ ] AI output confidence is shown where available.
-- [ ] AI fallback behavior is represented.
-- [ ] Human approval is required for controlled asset-management decisions.
-- [ ] Sustainability estimates clearly identify assumptions.
-- [ ] Emission factors and their sources are identified when used.
-- [ ] UC-33, UC-34, and UC-35 have their functional requirements confirmed before final submission.
-- [ ] The final file is checked against the shared Level 0 DFD and ER diagram.
-- [ ] All diagrams are readable in the final PDF.
-- [ ] Changes are committed in small steps using the contributor's own GitHub account.
