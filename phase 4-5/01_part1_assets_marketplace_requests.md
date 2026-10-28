@@ -155,3 +155,149 @@ flowchart LR
 D2 contains asset records, D4 contains marketplace listings, and D5 contains requests, reservations, and watchlist information.
 
 ---
+
+# 2. Sequence Diagrams
+
+Sequence diagrams describe the interaction between actors and software components during important use cases.
+
+The diagrams use the following notation:
+
+- Solid arrows represent messages or requests.
+- Dashed arrows represent responses.
+- `alt` blocks represent alternative conditions.
+- Activation bars indicate when a component is processing an action.
+
+## 2.1 UC-01 Register Asset
+
+This sequence shows how an Asset Custodian registers an asset.
+
+The system validates the submitted information, checks for duplicate tag numbers, obtains an optional AI classification suggestion, and creates the asset record.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor AC as Asset Custodian
+    participant UI as Web Page
+    participant AssetController
+    participant Security
+    participant AssetService
+    participant AIFacade
+    participant AIService as AI Service
+    participant DB as Database
+    participant Audit as History and Audit
+
+    AC->>UI: Click "Register new asset"
+    UI-->>AC: Show registration form
+    AC->>UI: Enter details and photos, click Submit
+    UI->>AssetController: POST /assets
+
+    activate AssetController
+    AssetController->>Security: checkPermission(user, "register asset")
+    Security-->>AssetController: allowed
+
+    AssetController->>AssetService: registerAsset(data)
+    activate AssetService
+    AssetService->>AssetService: validate fields, quantity, value, date, files
+
+    alt a field is invalid
+        AssetService-->>AssetController: list of invalid fields
+        AssetController-->>UI: errors
+        UI-->>AC: Highlight invalid fields
+    else all fields are valid
+        AssetService->>DB: find asset with same tag number
+        DB-->>AssetService: result
+
+        alt tag number already exists
+            AssetService-->>UI: existing asset
+            UI-->>AC: Show existing asset, cancel or correct
+        else tag number is new
+            AssetService->>AIFacade: suggestCategory(title, description, specs, image)
+            activate AIFacade
+            AIFacade->>AIService: classify without personal data
+
+            alt answer within 15 seconds
+                AIService-->>AIFacade: category, tags, confidence
+                AIFacade-->>AssetService: suggestion and confidence
+            else no answer in 15 seconds
+                AIFacade-->>AssetService: no suggestion, use fallback
+            end
+
+            deactivate AIFacade
+            AssetService-->>UI: suggestion if available
+            UI-->>AC: Show category and confidence
+            AC->>UI: Accept or change category
+            UI->>AssetService: confirmed category
+
+            AssetService->>DB: save asset with status Registered and media
+            DB-->>AssetService: asset ID
+            AssetService->>Audit: record history and audit entries
+            AssetService-->>AssetController: asset ID
+            deactivate AssetService
+
+            AssetController-->>UI: success
+            deactivate AssetController
+            UI-->>AC: Confirm registration and offer publication
+        end
+    end
+```
+
+The category suggested by AI is not automatically accepted. The user must review and confirm it.
+
+If the AI service is unavailable, the system continues using manual classification.
+
+---
+
+## 2.2 UC-05 Submit Request
+
+This sequence shows how a Requester creates a resource request.
+
+The request is validated, stored, and passed to the AI matching service to obtain suggested resources.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor RQ as Requester
+    participant UI as Web Page
+    participant RequestController
+    participant RequestService
+    participant AIFacade
+    participant DB as Database
+    participant Audit as History and Audit
+    participant Noti as Notification Module
+
+    RQ->>UI: Click "Create request"
+    UI-->>RQ: Show request form
+    RQ->>UI: Enter category, purpose, quantity, urgency, location, date
+    UI->>RequestController: POST /requests
+
+    activate RequestController
+    RequestController->>RequestService: submitRequest(data)
+    activate RequestService
+    RequestService->>RequestService: validate quantity, date and urgency
+
+    alt data is invalid
+        RequestService-->>RequestController: validation errors
+        RequestController-->>UI: errors
+        UI-->>RQ: Show invalid fields
+    else data is valid
+        RequestService->>DB: save request with status Submitted
+        DB-->>RequestService: request ID
+
+        RequestService->>Audit: record audit entry
+        RequestService->>Noti: notify Department Representative
+
+        RequestService->>AIFacade: findMatches(request)
+        AIFacade-->>RequestService: ranked matches or fallback list
+
+        RequestService-->>RequestController: request ID and matches
+        deactivate RequestService
+        RequestController-->>UI: success
+        deactivate RequestController
+
+        UI-->>RQ: Show request ID and suggested assets
+    end
+```
+
+The validation process checks that the requested quantity is at least one, the date is valid, and urgency is Low, Medium, or High.
+
+---
