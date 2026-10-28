@@ -14,9 +14,12 @@ Shared diagrams (architecture, context, Level 0 DFD, ER diagram) are in `00_arch
 
 ## 1.1 Process 1.0 – Manage Users and Access
 
-```
+<img width="3144" height="2068" alt="8 drawio" src="https://github.com/user-attachments/assets/41ae1521-6f61-424e-b280-8f4e03fb3f09" />
 
-```
+
+
+
+
 
 | Process | Does what | Requirements |
 |---|---|---|
