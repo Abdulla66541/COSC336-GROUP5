@@ -1,4 +1,4 @@
-<img width="784" height="702" alt="image" src="https://github.com/user-attachments/assets/53e1d2a6-0543-4915-9dce-4e30f02b7612" /># Phase 4 & 5 – Part 4: AI Layer and Sustainability
+# Phase 4 & 5 – Part 4: AI Layer and Sustainability
 
 **Owner:** Abdulla
 
