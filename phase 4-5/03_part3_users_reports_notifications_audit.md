@@ -48,6 +48,28 @@ Shared diagrams (architecture, context, Level 0 DFD, ER diagram) are in `00_arch
 | 10.1 Record Audit Entry | Writes audit ID, actor, action, record, time, outcome and old and new values. Passwords are never stored | FR-AUD-01, FR-AUD-02, BR-14 |
 | 10.2 Show Audit Log | Shows and filters entries by user, action, record and date. Only AD and SA | FR-AUD-04, FR-AUD-03 |
 
-> 
+
 ---
+
+# 2. Sequence Diagrams
+
+## 2.1 UC-20 Log In
+
+
+
+Both wrong-password and inactive-account give the same message, so nobody can find out which emails exist (FR-USR error rules).
+
+## 2.2 Self-Registration (FR-USR-02)
+
+
+
+## 2.3 UC-17 Create User
+
+
+
+## 2.4 UC-18 Assign Role
+
+
+
+## 2.5 UC-19 Deactivate User
 
