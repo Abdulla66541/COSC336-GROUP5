@@ -68,16 +68,3 @@ Both wrong-password and inactive-account give the same message, so nobody can fi
 <img width="3750" height="1880" alt="5 drawio" src="https://github.com/user-attachments/assets/81e5387a-aead-4944-b409-9344ce34c6d8" />
 
 
-## 2.3 UC-17 Create User
-
-<img width="3688" height="2382" alt="6 drawio" src="https://github.com/user-attachments/assets/82cfe126-2bae-4758-8b95-fa9ad4f031ab" />
-
-
-## 2.4 UC-18 Assign Role
-
-<img width="2472" height="2130" alt="7 drawio" src="https://github.com/user-attachments/assets/d8744bf7-2603-48a6-858a-82606505f7a6" />
-
-
-## 2.5 UC-19 Deactivate User
-
-<img width="3144" height="2068" alt="8 drawio" src="https://github.com/user-attachments/assets/20add6f3-3f17-4230-a296-943c8b6606a4" />
