@@ -186,7 +186,8 @@ circular-campus/
 
 The context diagram shows the whole system as one process and everything outside it. It has no data stores. Every arrow has its own name.
 
-![Context Diagram](00_context_diagram.png)
+<img width="2340" height="1300" alt="00_context_diagram" src="https://github.com/user-attachments/assets/96e19ed9-6db4-4f7e-8210-fd724ca9187b" />
+
 
 | External entity | Type | Sends to the system | Receives from the system |
 |---|---|---|---|
@@ -236,7 +237,8 @@ Drawing symbols in the Level 0 picture: a rounded box with a number on top is a 
 
 The picture follows the lecture notation. To keep it readable, roles of the same kind are grouped in two boxes (the context diagram above shows each role on its own): "Department Staff" means DR and AC, and "Procurement and Sustainability Officers" means PO and SO. The picture is large, so click it on GitHub to zoom in.
 
-<img width="2340" height="1300" alt="00_context_diagram" src="https://github.com/user-attachments/assets/6a99c0a2-6bbf-404a-80c0-e90dc80088fd" />
+<img width="3512" height="1834" alt="00_level0_dfd" src="https://github.com/user-attachments/assets/5097741d-830f-4974-a4dd-02b791591178" />
+
 
 
 ## 4.3 Process List
