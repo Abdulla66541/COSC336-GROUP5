@@ -4,172 +4,25 @@
 
 **Requirement Groups:** FR-AST, FR-MKT, FR-REQ, FR-SRC, FR-RSV
 
-**Data Stores:** D2 Assets, D3 Asset History, D4 Listings, D5 Requests and Reservations
+**Main Classes:** Asset, Category, AssetMedia, Listing, Request, Reservation, WatchlistItem
 
-**Tables:** CATEGORY, ASSET, ASSET_MEDIA, LISTING, REQUEST, RESERVATION, WATCHLIST_ITEM
+The shared architecture, context diagram, Level 0 DFD, and ER diagram are documented in `00_architecture_and_shared_design.md`.
 
-The shared architecture, context diagram, Level 0 DFD, ER diagram, and data rules are described in `00_architecture_and_shared_design.md`.
-
----
-
-# 1. Data Flow Diagrams – Level 1
-
-The Level 1 DFDs show how the main processes are divided into smaller processes.
-
-This section covers asset management and marketplace/request management.
-
-## 1.1 Process 2.0 – Manage Assets
-
-This process handles asset registration, editing, and deactivation.
-
-Asset Custodians and Department Representatives provide asset information. The system checks the information and saves it in D2 Assets. Important changes are recorded in D3 Asset History.
-
-```mermaid
-flowchart LR
-    AC["Asset Custodian"]
-    DR["Department Representative"]
-
-    P21["2.1 Register Asset"]
-    P22["2.2 Update Asset"]
-    P23["2.3 Deactivate Asset"]
-
-    D2["D2 Assets"]
-    D3["D3 Asset History"]
-    AI["6.0 AI Functions"]
-    P4["4.0 Approvals and Transfers"]
-
-    AC -->|Asset details| P21
-    DR -->|Asset details| P21
-    D2 -->|Existing tag numbers| P21
-    P21 -->|New asset| D2
-    P21 -->|History event| D3
-    P21 -->|Classification request| AI
-    AI -->|Suggestion| P21
-    P21 -->|Registration result| AC
-
-    AC -->|Edit details| P22
-    DR -->|Edit details| P22
-    D2 -->|Current record| P22
-    P4 -->|Ownership change| P22
-    P22 -->|Updated asset| D2
-    P22 -->|Change history| D3
-    P22 -->|Update result| AC
-
-    AC -->|Deactivate request| P23
-    D2 -->|Asset status| P23
-    P23 -->|Inactive record| D2
-    P23 -->|History event| D3
-    P23 -->|Deactivation result| AC
-```
-
-### Process Description
-
-| Process | Description | Requirements |
-|---|---|---|
-| 2.1 Register Asset | Validates asset information, checks duplicate tag numbers, obtains an optional AI category suggestion, and saves the asset | FR-AST-01 to 08, FR-AI |
-| 2.2 Update Asset | Updates asset information and records the previous values | FR-AST-09, BR-13 |
-| 2.3 Deactivate Asset | Marks an asset as inactive | FR-AST-10 |
-
-### Data Stores
-
-- **D2 Assets:** Stores current asset information.
-- **D3 Asset History:** Records asset changes and important events.
-
-The AI service may suggest an asset category during registration, but the user confirms the final category.
+The Data Flow Diagrams for this part are handled separately by another team member.
 
 ---
 
-## 1.2 Process 3.0 – Handle Marketplace and Requests
+# 1. Sequence Diagrams
 
-This process handles marketplace publication, withdrawal, search, request submission, reservation, request tracking, cancellation, and watchlists.
+Sequence diagrams show how users interact with the system and how information moves between the website, services, and database.
 
-```mermaid
-flowchart LR
-    DR["Department Representative"]
-    AC["Asset Custodian"]
-    RQ["Requester"]
+The diagrams below cover UC-01 to UC-10.
 
-    P31["3.1 Publish Listing"]
-    P32["3.2 Withdraw Listing"]
-    P33["3.3 Search Assets"]
-    P34["3.4 Submit Request"]
-    P35["3.5 Reserve Asset"]
-    P36["3.6 Track and Cancel"]
-    P37["3.7 Save Watchlist"]
+## 1.1 UC-01 Register Asset
 
-    D2["D2 Assets"]
-    D4["D4 Listings"]
-    D5["D5 Requests"]
-    AI["6.0 AI Functions"]
+This use case allows an Asset Custodian or Department Representative to register a new asset.
 
-    DR -->|Publish order| P31
-    AC -->|Publish order| P31
-    D2 -->|Asset details| P31
-    P31 -->|New listing| D4
-    P31 -->|Result| DR
-
-    DR -->|Withdraw order| P32
-    AC -->|Withdraw order| P32
-    D4 -->|Current listing| P32
-    P32 -->|Updated listing| D4
-
-    RQ -->|Search filters| P33
-    D4 -->|Active listings| P33
-    P33 -->|Results| RQ
-
-    RQ -->|Request details| P34
-    P34 -->|New request| D5
-    P34 -->|Match request| AI
-    AI -->|Matches| P34
-    P34 -->|Confirmation| RQ
-
-    RQ -->|Reserve order| P35
-    D2 -->|Available quantity| P35
-    D5 -->|Existing reservations| P35
-    P35 -->|Reservation| D5
-    P35 -->|Result| RQ
-
-    RQ -->|Track or cancel| P36
-    D5 -->|Request status| P36
-    P36 -->|Updated request| D5
-    P36 -->|Status| RQ
-
-    RQ -->|Watch asset or search| P37
-    P37 -->|Watchlist item| D5
-    P37 -->|Confirmation| RQ
-```
-
-### Process Description
-
-| Process | Description | Requirements |
-|---|---|---|
-| 3.1 Publish Listing | Publishes an eligible asset on the marketplace | FR-MKT-01, FR-MKT-02 |
-| 3.2 Withdraw Listing | Withdraws an active listing | FR-MKT-03 |
-| 3.3 Search Assets | Searches and filters published assets | FR-SRC-01 to 05 |
-| 3.4 Submit Request | Creates a resource request and obtains possible AI matches | FR-REQ-01 to 06 |
-| 3.5 Reserve Asset | Reserves an available asset after checking quantity and conflicts | FR-RSV-01 to 05 |
-| 3.6 Track and Cancel | Displays request status and processes cancellation | FR-REQ-07 to 09 |
-| 3.7 Save Watchlist | Saves an asset or search to a personal watchlist | FR-SRC-06, FR-SRC-07 |
-
-### Data Stores
-
-- **D2 Assets:** Contains asset information.
-- **D4 Listings:** Contains marketplace listings.
-- **D5 Requests and Reservations:** Contains requests, reservations, and watchlist information.
-
----
-
-# 2. Sequence Diagrams
-
-Sequence diagrams show how the user, website, services, and database communicate during each use case.
-
-The diagrams use simple interactions and include important alternative conditions.
-
-## 2.1 UC-01 Register Asset
-
-An Asset Custodian or Department Representative registers a new asset.
-
-The system validates the information, checks for duplicates, and may suggest a category using AI.
+The system checks the asset details, prevents duplicates, and may use AI to suggest a category.
 
 ```mermaid
 sequenceDiagram
@@ -177,7 +30,7 @@ sequenceDiagram
     participant UI as Web Page
     participant S as AssetService
     participant DB as Database
-    participant AI as AI Service
+    participant AI as AI Module
 
     U->>UI: Enter asset details
     UI->>S: Submit asset
@@ -186,18 +39,19 @@ sequenceDiagram
     alt Invalid information
         S-->>UI: Show errors
     else Valid information
-        S->>DB: Check duplicate asset
+        S->>DB: Check duplicate tag
         DB-->>S: Result
 
         alt Duplicate found
-            S-->>UI: Show existing asset
+            S-->>UI: Show duplicate warning
         else No duplicate
             S->>AI: Suggest category
-            AI-->>S: Suggestion or timeout
-            S-->>UI: Show suggestion if available
+            AI-->>S: Suggestion or fallback
+            S-->>UI: Show suggestion
             U->>UI: Confirm category
             UI->>S: Save asset
-            S->>DB: Store asset and history
+            S->>DB: Store asset
+            S->>DB: Record asset history
             S-->>UI: Registration successful
         end
     end
@@ -205,25 +59,23 @@ sequenceDiagram
 
 ### Explanation
 
-The user fills in the asset registration form.
+The user enters the asset information, such as name, category, quantity, condition, location, and department.
 
-The AssetService validates the information and checks whether the asset already exists.
+The system validates the information and checks whether the asset tag already exists.
 
-AI may suggest a category, but the user confirms it.
+AI may suggest a category, but the user confirms the final category.
 
-If AI does not respond within 15 seconds, the user can select a category manually.
+If AI does not respond within 15 seconds, the user can choose the category manually.
 
-After confirmation, the system saves the asset and records its registration in history.
+Finally, the asset is saved and its registration is recorded in history.
 
 **Related Requirements:** FR-AST, FR-AI, BR-11, BR-13.
 
 ---
 
-## 2.2 UC-02 Edit Asset
+## 1.2 UC-02 Edit Asset
 
-An Asset Custodian or Department Representative updates an existing asset record.
-
-The system validates the changes and records the previous values.
+This use case allows an authorized user to update an existing asset record.
 
 ```mermaid
 sequenceDiagram
@@ -231,12 +83,11 @@ sequenceDiagram
     participant UI as Web Page
     participant S as AssetService
     participant DB as Database
-    participant H as Asset History
 
     U->>UI: Open asset and click Edit
-    UI->>S: Request asset details
-    S->>DB: Get current asset
-    DB-->>S: Asset information
+    UI->>S: Get asset details
+    S->>DB: Read asset
+    DB-->>S: Current information
     S-->>UI: Show edit form
 
     U->>UI: Change details and click Save
@@ -245,14 +96,15 @@ sequenceDiagram
 
     alt Invalid information
         S-->>UI: Show errors
-    else Changes are valid
-        S->>DB: Check current version
+    else Valid information
+        S->>DB: Check latest version
+        DB-->>S: Version result
 
-        alt Asset changed by another user
+        alt Asset was changed by someone else
             S-->>UI: Ask user to reload
         else No conflict
-            S->>DB: Save updated asset
-            S->>H: Record old and new values
+            S->>DB: Save new values
+            S->>DB: Record old and new values
             S-->>UI: Update successful
         end
     end
@@ -260,23 +112,23 @@ sequenceDiagram
 
 ### Explanation
 
-The user opens an asset and selects Edit.
+The user opens an existing asset and clicks Edit.
 
-The system displays the existing information and allows the user to make changes.
+The system displays the current asset information.
 
-If the information is invalid, the system displays an error.
+After the user makes changes, the system validates them.
 
-If another user changed the asset first, the system asks the user to reload.
+If the asset was already modified by another user, the system asks the user to reload the latest version.
 
-Otherwise, the new information is saved and the previous values remain in history.
+Otherwise, the changes are saved and the previous information remains in history.
 
 **Related Requirements:** FR-AST, FR-HST, FR-AUD, BR-13, BR-14.
 
 ---
 
-## 2.3 UC-03 Publish Surplus Asset
+## 1.3 UC-03 Publish Surplus Asset
 
-An Asset Custodian or Department Representative publishes an unused asset so other departments can find and request it.
+This use case allows an Asset Custodian or Department Representative to publish an unused asset in the marketplace.
 
 ```mermaid
 sequenceDiagram
@@ -284,27 +136,28 @@ sequenceDiagram
     participant UI as Web Page
     participant S as MarketplaceService
     participant DB as Database
-    participant AI as AI Service
+    participant AI as AI Module
 
-    U->>UI: Select Publish as Surplus
+    U->>UI: Click Publish as Surplus
     UI->>S: Request publication
-    S->>DB: Check asset status
-    DB-->>S: Asset information
+    S->>DB: Check asset availability
+    DB-->>S: Asset status
 
-    alt Asset is not eligible
-        S-->>UI: Publication rejected
+    alt Asset cannot be published
+        S-->>UI: Show error
     else Asset is eligible
         S->>AI: Suggest title and keywords
-        AI-->>S: Suggestion or timeout
+        AI-->>S: Suggestion or fallback
         S-->>UI: Show publication form
         U->>UI: Review and confirm
         UI->>S: Publish asset
-        S->>DB: Check duplicate listings
+        S->>DB: Check existing listings
+        DB-->>S: Duplicate check
 
-        alt Duplicate listing found
-            S-->>UI: Show duplicate warning
+        alt Possible duplicate
+            S-->>UI: Warn user to review
         else No duplicate
-            S->>DB: Save active listing
+            S->>DB: Save listing
             S-->>UI: Publication successful
         end
     end
@@ -312,23 +165,25 @@ sequenceDiagram
 
 ### Explanation
 
-The user selects an eligible asset and chooses Publish as Surplus.
+The user selects an asset and chooses Publish as Surplus.
 
 The system checks whether the asset can be published.
 
-AI may suggest a better title or keywords, but the user reviews them before publication.
+AI may suggest a better title or keywords, but the user can change them.
 
-The system checks for duplicate listings and saves the new listing.
+The system also checks for possible duplicate listings.
 
-If AI is unavailable, the user can enter the information manually.
+If a duplicate is found, the user is warned and can review it before deciding whether to continue.
 
-**Related Requirements:** FR-MKT, FR-AI, FR-NTF, BR-11, BR-13, BR-14.
+When publication is confirmed, the listing becomes available to authorized users.
+
+**Related Requirements:** FR-MKT, FR-AI, FR-NTF, BR-11, BR-13.
 
 ---
 
-## 2.4 UC-04 Withdraw Listing
+## 1.4 UC-04 Withdraw Listing
 
-An authorized Asset Custodian or Department Representative removes an active listing from the marketplace.
+This use case allows an authorized user to remove a marketplace listing.
 
 ```mermaid
 sequenceDiagram
@@ -340,7 +195,7 @@ sequenceDiagram
 
     U->>UI: Click Withdraw Listing
     UI->>S: Request withdrawal
-    S->>DB: Check listing and transfers
+    S->>DB: Check listing and transfer
     DB-->>S: Current status
 
     alt Approved transfer exists
@@ -349,33 +204,32 @@ sequenceDiagram
         S-->>UI: Ask for reason
         U->>UI: Enter reason and confirm
         UI->>S: Confirm withdrawal
-        S->>DB: Mark listing withdrawn
-        S->>N: Notify affected requesters
+        S->>DB: Mark listing Withdrawn
+        S->>DB: Record withdrawal
+        S->>N: Notify affected users
         S-->>UI: Withdrawal successful
     end
 ```
 
 ### Explanation
 
-The user selects an active listing and requests withdrawal.
+The user selects Withdraw Listing.
 
 The system checks whether an approved transfer is already in progress.
 
-If a transfer has already been approved, withdrawal is blocked.
+If an approved transfer exists, withdrawal is blocked.
 
-Otherwise, the user enters a reason and confirms the withdrawal.
+Otherwise, the user enters a reason and confirms.
 
-The system removes the listing and notifies affected requesters.
+The system marks the listing as Withdrawn and notifies affected requesters.
 
 **Related Requirements:** FR-MKT, FR-NTF, BR-06, BR-14.
 
 ---
 
-## 2.5 UC-05 Submit Request
+## 1.5 UC-05 Submit Request
 
-A Requester submits a resource request containing the required details.
-
-The system validates the information, saves the request, and looks for matching assets.
+This use case allows a Requester to submit a request for a resource.
 
 ```mermaid
 sequenceDiagram
@@ -383,11 +237,11 @@ sequenceDiagram
     participant UI as Web Page
     participant S as RequestService
     participant DB as Database
-    participant AI as AI Service
+    participant AI as AI Module
 
     RQ->>UI: Fill request form
     UI->>S: Submit request
-    S->>S: Validate details
+    S->>S: Validate information
 
     alt Invalid request
         S-->>UI: Show errors
@@ -404,9 +258,11 @@ sequenceDiagram
 
 The Requester enters the category, purpose, quantity, urgency, location, and required date.
 
-The system validates the information and creates the request.
+The system checks the information and creates the request.
 
-AI may suggest suitable assets based on the request details.
+The request receives a unique ID and its status becomes Submitted.
+
+AI may suggest matching assets based on the request details.
 
 If AI is unavailable, the system uses normal search as a fallback.
 
@@ -414,9 +270,9 @@ If AI is unavailable, the system uses normal search as a fallback.
 
 ---
 
-## 2.6 UC-06 Search and Filter Assets
+## 1.6 UC-06 Search and Filter Assets
 
-A Requester searches for published assets using keywords and filters.
+This use case allows users to search for available assets using keywords and filters.
 
 ```mermaid
 sequenceDiagram
@@ -426,38 +282,40 @@ sequenceDiagram
     participant DB as Database
 
     RQ->>UI: Enter keywords and filters
-    UI->>S: Search request
-    S->>S: Check access and filters
+    UI->>S: Search assets
+    S->>S: Check filters and permissions
 
     alt Invalid filters
         S-->>UI: Show filter error
     else Valid filters
         S->>DB: Find published assets
         DB-->>S: Matching records
-        S-->>UI: Search results
-        UI-->>RQ: Display matching assets
+
+        alt No results
+            S-->>UI: No matching assets
+        else Results found
+            S-->>UI: Display matching assets
+        end
     end
 ```
 
 ### Explanation
 
-The user enters search keywords and selects filters such as category, department, condition, or location.
+The user enters keywords and may filter assets by category, condition, department, location, quantity, or other criteria.
 
-The system validates the filters and searches published assets.
+The system validates the filters and searches available listings.
 
-Only authorized information is displayed.
+Only assets that the user is authorized to view are displayed.
 
-If no assets match the criteria, the system displays "No matching resources found".
+If no assets match, the system displays "No matching resources found".
 
 **Related Requirements:** FR-SRC, FR-MKT, NFR-02.
 
 ---
 
-## 2.7 UC-07 Reserve Asset
+## 1.7 UC-07 Reserve Asset
 
-A Requester reserves an available asset.
-
-The system checks availability before saving the reservation.
+This use case allows a Requester to reserve an available asset.
 
 ```mermaid
 sequenceDiagram
@@ -468,35 +326,38 @@ sequenceDiagram
 
     RQ->>UI: Click Reserve
     UI->>S: Request reservation
-    S->>DB: Check availability
-    DB-->>S: Asset status and quantity
+    S->>DB: Check asset availability
+    DB-->>S: Status and free quantity
 
-    alt Asset unavailable
+    alt Asset unavailable or quantity insufficient
         S-->>UI: Reservation rejected
-    else Asset available
+    else Reservation allowed
         S->>DB: Save 7-day reservation
-        S->>DB: Update asset and history
+        S->>DB: Update reserved quantity
+        S->>DB: Record reservation event
         S-->>UI: Reservation confirmed
     end
 ```
 
 ### Explanation
 
-The Requester selects Reserve on an available asset.
+The Requester selects an available asset and clicks Reserve.
 
-The system checks whether the requested quantity is available and whether a conflicting reservation exists.
+The system checks the asset's availability and existing reservations.
 
-If the asset is unavailable, the reservation is rejected.
+If the requested quantity is not available, the reservation is rejected.
 
-Otherwise, the reservation is saved with a seven-day expiry.
+Otherwise, the system creates the reservation.
+
+The reservation expires after seven days if the required approval is not completed.
 
 **Related Requirements:** FR-RSV, BR-04.
 
 ---
 
-## 2.8 UC-08 Track Request
+## 1.8 UC-08 Track Request
 
-A Requester checks the current status of a submitted request.
+This use case allows a Requester to check the progress of an existing request.
 
 ```mermaid
 sequenceDiagram
@@ -509,11 +370,11 @@ sequenceDiagram
     UI->>S: Get my requests
     S->>DB: Find requests for user
     DB-->>S: Request list
-    S-->>UI: Show requests
 
-    alt No requests found
-        UI-->>RQ: Show empty list
+    alt No requests
+        S-->>UI: Show empty list
     else Requests found
+        S-->>UI: Show request list
         RQ->>UI: Select a request
         UI->>S: Get request status
         S->>DB: Read request details
@@ -524,14 +385,469 @@ sequenceDiagram
 
 ### Explanation
 
-The Requester opens My Requests and selects a request.
+The Requester opens the My Requests page.
 
-The system displays the current status and progress.
+The system retrieves the user's requests and displays their current statuses.
 
-If the request was rejected, the system shows the rejection reason.
+When the user selects a request, the system shows the status, progress, and next required action.
 
 If the user has no requests, an empty-list message is displayed.
 
 **Related Requirements:** FR-REQ, FR-HST.
 
 ---
+
+## 1.9 UC-09 Cancel Request
+
+This use case allows a Requester to cancel a request that is no longer needed.
+
+```mermaid
+sequenceDiagram
+    actor RQ as Requester
+    participant UI as Web Page
+    participant S as RequestService
+    participant DB as Database
+    participant N as Notifications
+
+    RQ->>UI: Click Cancel Request
+    UI->>S: Request cancellation
+    S->>DB: Check request status
+    DB-->>S: Current status
+
+    alt Cancellation not allowed
+        S-->>UI: Administrator required
+    else Cancellation allowed
+        S-->>UI: Ask for confirmation
+        RQ->>UI: Confirm cancellation
+        UI->>S: Cancel request
+        S->>DB: Set status Cancelled
+        S->>DB: Release any reservation
+        S->>N: Notify asset owner
+        S-->>UI: Cancellation successful
+    end
+```
+
+### Explanation
+
+The Requester selects Cancel Request.
+
+The system checks whether the request is still eligible for cancellation.
+
+If a transfer has already been approved, the Requester must contact an Administrator.
+
+Otherwise, the request is cancelled and any active reservation is released.
+
+The asset owner is also notified.
+
+**Related Requirements:** FR-REQ, FR-RSV, BR-04, BR-14.
+
+---
+
+## 1.10 UC-10 Save Asset to Watchlist
+
+This use case allows a Requester to save an asset or search to their watchlist.
+
+```mermaid
+sequenceDiagram
+    actor RQ as Requester
+    participant UI as Web Page
+    participant S as SearchService
+    participant DB as Database
+    participant N as Notifications
+
+    RQ->>UI: Click Watch
+    UI-->>RQ: Show watch options
+    RQ->>UI: Select asset or search
+    UI->>S: Save watchlist item
+    S->>DB: Check existing watch
+    DB-->>S: Result
+
+    alt Already watched
+        S-->>UI: Offer to stop watching
+    else New watch
+        S->>DB: Save watchlist item
+        S-->>UI: Watch saved
+    end
+
+    opt Matching asset appears later
+        S->>N: Notify if enabled
+    end
+```
+
+### Explanation
+
+The Requester selects Watch on an asset or saved search.
+
+The system checks whether it is already in the watchlist.
+
+If it is not already saved, a new watchlist entry is created.
+
+The system may notify the Requester when a matching asset becomes available, depending on notification settings.
+
+**Related Requirements:** FR-SRC, FR-NTF.
+
+---
+
+## 1.11 Automatic Reservation Expiry
+
+The system checks reservations automatically and releases those that have expired.
+
+```mermaid
+sequenceDiagram
+    participant T as Daily Timer
+    participant S as ReservationService
+    participant DB as Database
+    participant N as Notifications
+
+    T->>S: Check old reservations
+    S->>DB: Find unapproved reservations past 7 days
+    DB-->>S: Expired reservations
+
+    loop Each expired reservation
+        S->>DB: Mark reservation Expired
+        S->>DB: Release reserved quantity
+        S->>DB: Record expiry event
+        S->>N: Notify requester
+    end
+```
+
+### Explanation
+
+A daily timer starts the reservation expiry check.
+
+The system identifies active reservations that have exceeded seven days without the required approval.
+
+It marks them as Expired and releases the reserved quantity.
+
+The Requester is notified about the expiry.
+
+**Related Requirements:** FR-RSV-05, BR-04.
+
+---
+
+# 2. Class Diagram
+
+The class diagram shows the main classes used in the asset, marketplace, and request modules.
+
+Entity classes store information, while service classes handle system operations.
+
+```mermaid
+classDiagram
+    class Category {
+        +int categoryId
+        +string name
+    }
+
+    class Asset {
+        +int assetId
+        +string tagNumber
+        +string name
+        +int quantity
+        +string status
+    }
+
+    class AssetMedia {
+        +int mediaId
+        +string filePath
+    }
+
+    class Listing {
+        +int listingId
+        +string status
+    }
+
+    class Request {
+        +int requestId
+        +int quantity
+        +string status
+    }
+
+    class Reservation {
+        +int reservationId
+        +int quantity
+        +date expiresAt
+        +string status
+    }
+
+    class WatchlistItem {
+        +int watchId
+        +string savedSearch
+    }
+
+    class AssetService {
+        +registerAsset()
+        +updateAsset()
+        +deactivateAsset()
+    }
+
+    class MarketplaceService {
+        +publish()
+        +withdraw()
+        +expireOldListings()
+    }
+
+    class RequestService {
+        +submitRequest()
+        +editRequest()
+        +cancelRequest()
+        +getStatus()
+    }
+
+    class SearchService {
+        +search()
+        +saveToWatchlist()
+    }
+
+    class ReservationService {
+        +reserve()
+        +release()
+        +expireOldReservations()
+    }
+
+    Category "1" --> "0..*" Asset
+    Asset "1" --> "0..*" AssetMedia
+    Asset "1" --> "0..*" Listing
+    Asset "1" --> "0..*" Reservation
+    Request "1" --> "0..*" Reservation
+    Asset "1" --> "0..*" WatchlistItem
+
+    AssetService ..> Asset
+    MarketplaceService ..> Listing
+    RequestService ..> Request
+    SearchService ..> Asset
+    SearchService ..> WatchlistItem
+    ReservationService ..> Reservation
+```
+
+## 2.1 Main Classes
+
+| Class | Purpose |
+|---|---|
+| Category | Stores asset categories |
+| Asset | Stores the main asset information |
+| AssetMedia | Stores references to photographs and documents |
+| Listing | Represents an asset published on the marketplace |
+| Request | Represents a resource request |
+| Reservation | Stores reservation details and expiry |
+| WatchlistItem | Represents a watched asset or saved search |
+
+## 2.2 Service Classes
+
+| Class | Responsibility | Related Requirements |
+|---|---|---|
+| AssetService | Register, edit, and deactivate assets | FR-AST-01 to 10 |
+| MarketplaceService | Publish, withdraw, and expire listings | FR-MKT-01 to 04 |
+| RequestService | Submit, edit, cancel, and track requests | FR-REQ-01 to 09 |
+| SearchService | Search, filter, sort, and manage watchlists | FR-SRC-01 to 07 |
+| ReservationService | Create, release, and expire reservations | FR-RSV-01 to 05 |
+
+The class diagram is simplified to show the main classes and relationships.
+
+The complete database structure is described in the shared ER diagram.
+
+---
+
+# 3. User Interface Mockups
+
+The wireframes below show the main screens in the asset, marketplace, and request modules.
+
+They are simple layouts showing the information and buttons needed by users.
+
+## 3.1 Register Asset – UC-01
+
+```text
++----------------------------------------------------------------------+
+| Circular Campus          [Marketplace] [My Assets] [Requests]        |
++----------------------------------------------------------------------+
+| Register New Asset                                                   |
+|                                                                      |
+| Name *           [__________________________]                        |
+| Tag number *     [______________]                                    |
+| Description      [____________________________________]              |
+| Category *       [Select category v]                                 |
+|                                                                      |
+| AI suggestion: Laboratory chairs                                     |
+| Confidence: 82%                       [Accept] [Change]              |
+|                                                                      |
+| Quantity *       [1]                                                 |
+| Estimated value  [0.00] AED                                          |
+| Department *     [Computer Science v]                                |
+| Location *       [__________________________]                        |
+| Purchase date    [yyyy-mm-dd]                                        |
+|                                                                      |
+| Condition *      ( ) Good  ( ) Fair  ( ) Needs repair                |
+| Availability *   ( ) In use  ( ) Surplus                             |
+|                                                                      |
+| Photos           [Choose files]                                      |
+| Documents        [Choose files]                                      |
+|                                                                      |
+| * Required               [Save as Draft] [Register]                  |
++----------------------------------------------------------------------+
+```
+
+### Screen Description
+
+The Register Asset screen allows Asset Custodians and Department Representatives to create asset records.
+
+The form includes the asset's name, tag number, category, quantity, department, location, condition, purchase date, estimated value, and attachments.
+
+The system validates the information before saving.
+
+An optional AI category suggestion may be accepted or changed by the user.
+
+---
+
+## 3.2 Marketplace and Search – UC-03, UC-04, UC-06, UC-07, UC-10
+
+```text
++----------------------------------------------------------------------+
+| Marketplace                                                          |
++----------------------------------------------------------------------+
+| Search: [laboratory seating________________] [Search]                |
+|                                                                      |
+| Filters                 Sort by: [Publication Date v]                |
+|                                                                      |
+| Category    [v]          -------------------------------------       |
+| Condition   [v]          Lab Bench Stool - Quantity: 20             |
+| Department  [v]          Computer Science - Good                    |
+| Location    [v]          AED 150 each                                |
+| Quantity    [_]-[_]      [View] [Reserve] [Watch]                    |
+|                                                                      |
+| Value AED   [_]-[_]      -------------------------------------       |
+| Age         [_]-[_]      Office Chair - Quantity: 6                 |
+| Status      [v]          Business - Fair                             |
+|                          AED 90 each                                 |
+| [Apply Filters]          [View] [Reserve] [Watch]                    |
+| [Save Search]                                                        |
+|                                                                      |
+|                         Page 1 of 3 [Previous] [Next]               |
++----------------------------------------------------------------------+
+| No results: "No matching resources found"                            |
++----------------------------------------------------------------------+
+```
+
+### Screen Description
+
+The marketplace screen allows authorized users to search published assets.
+
+Users can filter results by category, condition, department, location, quantity, value, age, and status.
+
+Requesters can view asset details, reserve available assets, watch assets, and save searches.
+
+Authorized asset owners can publish or withdraw listings through the asset and listing details pages.
+
+---
+
+## 3.3 Create Request – UC-05
+
+```text
++----------------------------------------------------------------------+
+| New Resource Request                                                 |
++----------------------------------------------------------------------+
+|                                                                      |
+| Category *          [Furniture v]                                    |
+| Purpose *           [____________________________]                   |
+| Specifications      [____________________________]                   |
+| Quantity *          [10]                                             |
+| Preferred condition [Good v]                                         |
+|                                                                      |
+| Urgency *           ( ) Low  ( ) Medium  ( ) High                    |
+| Location *          [____________________]                           |
+| Required date *     [yyyy-mm-dd]                                     |
+|                                                                      |
+| [Cancel]                                  [Submit Request]            |
++----------------------------------------------------------------------+
+| Request R-0042 created                                               |
+|                                                                      |
+| Suggested assets:                                                    |
+| 1. Lab Bench Stool - Match 91%                 [View]                |
++----------------------------------------------------------------------+
+```
+
+### Screen Description
+
+The Create Request screen allows Requesters to submit information about the resources they need.
+
+The system validates the form and creates a new request.
+
+After submission, matching assets may be suggested by the AI module.
+
+---
+
+## 3.4 My Requests and Reservations – UC-08, UC-09
+
+```text
++----------------------------------------------------------------------+
+| My Requests                                                          |
++----------------------------------------------------------------------+
+|                                                                      |
+| ID      Asset / Need       Status                 Reserved Until     |
+| -------------------------------------------------------------------- |
+| R-0042  Lab Seating x10    Matched / Reserved     2026-11-05         |
+| R-0039  Projector x1       Approved               -                  |
+| R-0031  Monitors x20       Submitted              -                  |
+|                                                                      |
+| [View Details]     [Edit]     [Cancel Request]                        |
+|                                                                      |
+| Cancellation blocked after transfer approval:                        |
+| "Ask an administrator to cancel this request."                       |
++----------------------------------------------------------------------+
+```
+
+### Screen Description
+
+The My Requests screen allows Requesters to check the progress of their requests.
+
+It displays request status, reservation expiry date, and available actions.
+
+The user can edit or cancel a request only when permitted by the workflow.
+
+---
+
+# 4. Traceability
+
+The traceability table connects the Phase 4 and 5 design elements to the Phase 3 use cases and functional requirements.
+
+| Design Element | Use Case | Related Requirements |
+|---|---|---|
+| Sequence 1.1, AssetService | UC-01 Register Asset | FR-AST-01 to 08, FR-AI |
+| Sequence 1.2, AssetService | UC-02 Edit Asset | FR-AST-09, FR-HST, FR-AUD |
+| Sequence 1.3, MarketplaceService | UC-03 Publish Surplus Asset | FR-MKT-01, FR-MKT-02 |
+| Sequence 1.4, MarketplaceService | UC-04 Withdraw Listing | FR-MKT-03, FR-NTF |
+| Sequence 1.5, RequestService | UC-05 Submit Request | FR-REQ-01 to 06 |
+| Sequence 1.6, SearchService | UC-06 Search and Filter Assets | FR-SRC-01 to 05 |
+| Sequence 1.7, ReservationService | UC-07 Reserve Asset | FR-RSV-01 to 05, BR-04 |
+| Sequence 1.8, RequestService | UC-08 Track Request | FR-REQ-09 |
+| Sequence 1.9, RequestService | UC-09 Cancel Request | FR-REQ-08, FR-RSV |
+| Sequence 1.10, SearchService | UC-10 Save Asset to Watchlist | FR-SRC-06, FR-SRC-07 |
+| Sequence 1.11, ReservationService | Automatic Reservation Expiry | FR-RSV-05, BR-04 |
+| AssetService | Asset Deactivation | FR-AST-10 |
+| RequestService | Request Editing | FR-REQ-07 |
+| MarketplaceService | Automatic Listing Expiry | FR-MKT-04 |
+
+## 4.1 Design Consistency
+
+The sequence diagrams show the interactions between users, services, databases, and supporting modules.
+
+The class diagram identifies the main entities and services used in the system.
+
+The UI mockups show how users access these functions.
+
+The DFDs are handled separately by another team member and should be checked against these designs when the full group document is assembled.
+
+---
+
+# 5. Check Before You Commit
+
+- [ ] All ten use cases have sequence diagrams.
+- [ ] The sequence diagrams are arranged from UC-01 to UC-10.
+- [ ] The sequence diagrams use consistent service names.
+- [ ] The class diagram includes the required main classes.
+- [ ] The UI mockups cover the main functions.
+- [ ] Every functional requirement group is represented.
+- [ ] Reservation expiry follows BR-04.
+- [ ] AI only provides suggestions and does not make final decisions.
+- [ ] The diagrams use simple, readable shapes.
+- [ ] All Mermaid diagrams render correctly in GitHub.
+- [ ] My work is consistent with the team's DFDs and shared ER diagram.
+- [ ] I committed my work in small steps using my own GitHub account.
