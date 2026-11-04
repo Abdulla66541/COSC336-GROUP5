@@ -835,5 +835,3 @@ The UI mockups show how users access these functions.
 
 The DFDs are handled separately by another team member and should be checked against these designs when the full group document is assembled.
 
----
-
