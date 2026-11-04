@@ -14,375 +14,301 @@
 
 Service → AI Facade → Privacy Filter → AI Adapter → AI Service → Answer Checker → AI Output Log
 
-All AI use cases use the common AI integration path unless a fallback or alternative flow is triggered.
 
-# 1. Data Flow Diagrams, Level 1
+# 1. Sequence Diagrams
 
-## 1.1 Process 6.0 – Run AI Functions
+## 1.1 UC-26 – Classify Asset
 
-**Diagram file:**
-
-**Purpose:** Process 6.0 decomposes the AI layer into the eight AI-related processes used by the system.
-
-### Processes
-
-| Process | Description | Requirements |
-|---|---|---|
-| 6.1 Classify Asset | Suggests category, subcategory, tags, material type, and missing metadata for a newly registered or edited asset. | FR-AI-01 to FR-AI-15 |
-| 6.2 Match and Rank Assets | Compares requests with active listings, generates compatibility scores, and ranks the most suitable matches. | FR-AI-16 to FR-AI-35 |
-| 6.3 Recommend Sustainable Action | Recommends retain, transfer, repair, refurbish, donate, disassemble, or recycle, with disposal treated as a last option. | FR-AI-36 to FR-AI-49 |
-| 6.4 Answer Question | Answers user questions using permitted system information and does not approve or modify controlled actions. | FR-AI-50 to FR-AI-59 |
-| 6.5 Draft AI Report | Produces a draft report summary for human review. | FR-AI-60 to FR-AI-70 |
-| 6.6 Detect Duplicate Listings | Compares new listings with existing listings and warns about possible duplicates. | UC-33 |
-| 6.7 Predict Maintenance Need | Identifies assets with higher maintenance risk and provides supporting reasons. | UC-34 |
-| 6.8 Record Override and Feedback | Records AI overrides, reasons, and user feedback. | FR-AI-X-03, FR-AI-X-04 |
-
-### Data Stores Used
-
-- **D2 Assets**
-- **D4 Listings**
-- **D5 Requests and Reservations**
-- **D8 Maintenance Records**
-- **D10 AI Output Log**
-- **D11 Sustainability Records**
-- **D12 Reports**
-
-### Main Data Flows
-
-The Level 1 DFD shows the following flows:
-
-- Asset data is sent to 6.1 for AI classification.
-- Requests and active listings are sent to 6.2 for semantic matching and ranking.
-- Asset condition, asset history, and repair history are sent to 6.3 for sustainability recommendations.
-- Permitted asset and request data is used by 6.4 to answer questions.
-- Sustainability figures, request summaries, and maintenance trends are used by 6.5 to generate AI reports.
-- New listings and existing listings are used by 6.6 for duplicate detection.
-- Asset age, condition, and maintenance history are used by 6.7 for maintenance prediction.
-- Overrides and feedback are handled by 6.8 and recorded in the AI output log.
-
-AI requests are sent without unnecessary personal data. AI results are returned with confidence information where available and are recorded in D10 AI Output Log.
-
-## 1.2 Process 7.0 – Calculate Sustainability Figures
-
-**Diagram file:** 
-
-Process 7.0 manages the calculation and display of sustainability indicators.
-
-### Processes
-
-| Process | Description | Requirements |
-|---|---|---|
-| 7.1 Record Reuse Event | Records a reuse or avoided-purchase event after a completed transfer. | FR-SUS-05, FR-SUS-09 |
-| 7.2 Calculate Sustainability Figures | Calculates waste diversion, avoided purchases, life extension, reuse rate, repair rate, financial savings, and estimated CO2 reduction. | FR-SUS-01 to FR-SUS-31 |
-| 7.3 Show Dashboard | Displays sustainability figures by reporting period or department. | FR-SUS-27 to FR-SUS-31 |
-
-### Sustainability Data Flows
-
-- Completed transfer events are passed to 7.1.
-- Fulfilled requests can also create reuse events.
-- Reuse events are stored in D11 Sustainability Records.
-- D2 Assets provides asset values and categories.
-- D8 Maintenance Records provides repair information.
-- 7.2 calculates the sustainability indicators and stores the results in D11.
-- 7.3 retrieves the calculated results and displays them to authorised users.
-
-### Sustainability Formulas
-
-**Reuse rate (%)**
-
-`(Number of Assets Reused or Transferred / Number of Assets Considered for Reuse) × 100`
-
-**Repair rate (%)**
-
-`(Number of Assets Repaired / Number of Assets Requiring a Disposition Decision) × 100`
-
-**Estimated carbon reduction**
-
-`Activity Quantity × Applicable Emission Factor`
-
-The emission factor and its source shall be shown when a carbon-reduction estimate is produced.
-
-# 2. Sequence Diagrams
-
-The detailed sequence diagrams are maintained as separate diagrams.net/draw.io diagrams.
-
-## 2.1 UC-26 – Classify Asset
-
-**Diagram file:** 
-
-**Primary actor:** Asset Custodian
-
+**Primary actor:** Asset Custodian  
 **Secondary actor:** AI Service
 
-**Purpose:** Obtain an AI-generated asset classification and allow the user to review and approve or change the result.
+The sequence diagram shows how an Asset Custodian requests AI-assisted classification for an asset. The AI returns a suggested category, confidence score, and explanation. The user reviews the result and either accepts or changes the classification.
 
-**Main interactions:**
+If the confidence is low, the system warns the user. If the AI service does not respond within the configured timeout, the user can classify the asset manually.
 
-1. The Asset Custodian selects “Suggest category”.
-2. The system requests classification.
-3. The classification service sends the request through the AI layer.
-4. The AI Service returns a category, confidence score, and short reason.
-5. A low-confidence result produces a warning.
-6. If the AI does not respond within 15 seconds, manual classification is used.
-7. The AI output is logged.
-8. The suggestion is displayed to the Asset Custodian.
-9. The user accepts or changes the classification.
-10. The final value and any override are recorded.
+**Diagram:** UC-26 Classify Asset sequence diagram.
 
-## 2.2 UC-27 – Review AI Match
 
-**Diagram file:** `images/UC-27.png`
+## 1.2 UC-27 – View, Accept or Override Match
 
-**Primary actors:** Requester, Asset Custodian, Department Representative, Administrator, or Procurement Officer
-
+**Primary actors:** Requester, Asset Custodian  
 **Secondary actor:** AI Service
 
-**Purpose:** Identify and rank assets that best fit a resource request.
+The sequence diagram shows how the system compares a request or listing with available assets. The AI returns ranked matches with compatibility scores, confidence information, and explanations.
 
-**Main interactions:**
+The user can accept a suggested match or choose another option. If the AI service is unavailable, the system falls back to normal search.
 
-1. The user opens a request and requests AI matches.
-2. The system reads the request and active listings.
-3. The AI layer compares the request with available listings.
-4. The AI returns ranked matches, scores, reasons, and confidence.
-5. If the AI returns no suitable match, normal search is used.
-6. If the AI times out, the system falls back to keyword search.
-7. The result is logged.
-8. The user reviews the ranked matches.
-9. A low-confidence result is shown with a warning.
-10. The user can accept a match or choose another asset.
 
-## 2.3 UC-28 – Review Sustainability Recommendation
+## 1.3 UC-28 – Review Sustainability Recommendation
 
-**Diagram file:** `images/UC-28.png`
-
-**Primary actor:** Sustainability Officer
-
+**Primary actor:** Sustainability Officer  
 **Secondary actor:** AI Service
 
-**Purpose:** Review an AI recommendation for the next sustainability action for an asset.
+The sequence diagram shows how asset condition, maintenance history, value, and other information are used to generate a sustainability recommendation.
 
-**Main interactions:**
+Possible recommendations include retaining, transferring, repairing, refurbishing, donating, recycling, or disposing of an asset.
 
-1. The Sustainability Officer selects an asset.
-2. The system reads asset condition, repair history, status, and value.
-3. If insufficient information exists, the system displays “Not enough data”.
-4. Otherwise, the system requests an AI recommendation.
-5. The AI returns an action, reason, and confidence.
-6. Disposal is considered only after other suitable options are ruled out.
-7. The output is logged.
-8. The officer reviews the recommendation.
-9. The officer accepts, rejects, or changes the recommendation.
-10. Any override is recorded.
-
-## 2.4 UC-29 – Ask the Assistant
-
-**Diagram file:** 
-
-## 2.5 UC-30 – Generate AI Report
-
-**Diagram file:** 
-
-## 2.6 UC-31 – View Sustainability Dashboard
-
-**Diagram file:**
-## 2.7 UC-32 – Override an AI Output
-
-**Diagram file:** `
+The Sustainability Officer reviews the recommendation before any action is taken.
 
 
-## 2.8 UC-33 – Detect Duplicate Listings
+## 1.4 UC-29 – Ask the Assistant
 
-**Diagram file:** 
-## 2.9 UC-34 – Predict Maintenance Need
+**Primary actor:** All authorised users  
+**Secondary actor:** AI Service
 
-**Diagram file:** 
+The assistant allows users to ask questions using natural language.
+
+The system retrieves only information the user is authorised to access and sends the required information through the AI layer.
+
+The assistant may help with resource search, request information, asset history, status, policy guidance, and system navigation.
+
+The assistant cannot approve transfers, disposal, donation, or ownership changes.
 
 
-## 2.10 UC-35 – Submit AI Feedback
+## 1.5 UC-30 – Generate AI Report
 
-**Diagram file:** 
+**Primary actors:** Administrator, Sustainability Officer  
+**Secondary actor:** AI Service
 
-# 3. Class Diagram
+The system collects report data and asks the AI service to produce a written summary.
 
-## 3.1 AI Module
+The generated report is treated as a draft. Important figures are checked against the system data, and an authorised user must review the report before formal use.
 
-**Diagram file:** 
 
-The AI module contains the main classes responsible for controlled interaction with AI services.
+## 1.6 UC-31 – View Sustainability Dashboard
+
+**Primary actors:** Sustainability Officer, Administrator
+
+The dashboard displays sustainability indicators such as:
+
+- Assets reused
+- Avoided purchases
+- Waste diversion
+- Repair rate
+- Reuse rate
+- Estimated financial savings
+- Estimated carbon reduction
+- Asset-life extension
+
+Estimated figures are clearly identified and their assumptions are available to the user.
+
+
+## 1.7 UC-32 – Override an AI Output
+
+**Primary actors:** Asset Custodian, Administrator, Sustainability Officer
+
+An authorised user can reject or change an AI-generated output.
+
+The system records:
+
+- Original AI output
+- Final user-selected value
+- User who performed the override
+- Reason for the override
+- Date and time
+
+The human decision becomes the final decision.
+
+
+## 1.8 UC-33 – Detect Duplicate Listings
+
+**Primary actor:** Asset Custodian  
+**Secondary actor:** AI Service
+
+When a new asset or listing is created, the system compares it with existing listings.
+
+Possible duplicates are shown with a similarity score.
+
+The system does not automatically merge or delete records. The Asset Custodian makes the final decision.
+
+
+## 1.9 UC-34 – Predict Maintenance Need
+
+**Primary actor:** Maintenance Staff  
+**Secondary actor:** AI Service
+
+The system uses asset age, condition, repair history, and inspection information to identify assets that may require maintenance.
+
+The AI produces a risk ranking and explanation.
+
+Maintenance Staff reviews the result and may schedule an inspection.
+
+
+## 1.10 UC-35 – Submit AI Feedback
+
+**Primary actor:** All authorised users
+
+Users can rate an AI output as helpful or not helpful and may provide an optional comment.
+
+The feedback is associated with the relevant AI output and can later be reviewed by administrators.
+
+
+# 2. Class Diagrams
+
+## 2.1 AI Module
+
+The AI module contains the shared components used by the AI-enabled functions.
 
 ### Main Classes
 
-| Class | Main responsibility |
+| Class | Responsibility |
 |---|---|
-| AIFacade | Provides a single entry point to the AI layer and coordinates privacy filtering, adapters, validation, fallback, and logging. |
-| PrivacyFilter | Removes unnecessary personal data before AI processing. |
-| AIAdapter | Common interface for AI providers. |
-| LlmAdapter | Adapter for the selected LLM provider. |
-| FallbackService | Provides non-AI fallback behavior. |
-| AnswerChecker | Checks validity and confidence of AI results. |
-| AIOutputLogger | Stores AI outputs and associated metadata. |
-| AIResult | Represents the result returned from an AI function. |
-| AIOutput | Represents a stored AI result. |
-| AIOverride | Stores a user override of an AI result. |
-| AIFeedback | Stores user feedback about an AI result. |
+| AIFacade | Provides a single controlled entry point to AI functionality. |
+| PrivacyFilter | Removes unnecessary personal information before external AI processing. |
+| AIAdapter | Defines a common interface for AI providers. |
+| LlmAdapter | Connects the system to the selected LLM service. |
+| FallbackService | Provides non-AI behaviour when the AI service is unavailable. |
+| AnswerChecker | Checks AI results for validity and confidence. |
+| AIOutputLogger | Stores AI outputs and related metadata. |
+| AIResult | Represents the result returned by an AI function. |
+| AIOutput | Represents a stored AI output. |
+| AIOverride | Records a human override of an AI output. |
+| AIFeedback | Stores user feedback about an AI output. |
 
 ### AI Design Rules
 
-| Class | Rule |
-|---|---|
-| AIFacade | AI requests use one controlled path. |
-| PrivacyFilter | Names, emails, and personal identifiers are removed when not required. |
-| AIAdapter / LlmAdapter | A provider can be changed without changing higher-level services. |
-| FallbackService | Essential behavior has a fallback when AI is unavailable. |
-| AnswerChecker | Invalid and low-confidence results are handled safely. |
-| AIOutputLogger | Model, version, prompt version, confidence, and result are traceable. |
-| AIOverride | User overrides are recorded with the final value and reason. |
+- AI outputs are recommendations.
+- Human approval remains required for controlled decisions.
+- Personal information should not be sent to external AI services unless required.
+- AI outputs should be logged.
+- Model and prompt versions should be recorded where available.
+- AI functions should provide fallback behaviour where appropriate.
+- Low-confidence outputs should be clearly indicated.
 
-## 3.2 AI Functions and Sustainability
 
-**Diagram file:** 
+## 2.2 AI Functions and Sustainability
 
-The main application services are:
-
-- ClassificationService
-- MatchingService
-- RecommendationService
-- AssistantService
-- AIReportService
-- DuplicateDetector
-- MaintenancePredictor
-- OverrideService
-- FeedbackService
-- SustainabilityService
-- ReuseEvent
-- EmissionFactor
-- Figures
-- AIController
-- DashboardController
-
-### Service Responsibilities
+### Main Services
 
 | Service | Responsibility |
 |---|---|
-| ClassificationService | Runs AI-assisted asset classification. |
-| MatchingService | Finds and ranks matching assets. |
-| RecommendationService | Generates sustainability recommendations. |
-| AssistantService | Processes natural-language user questions. |
-| AIReportService | Generates and reviews AI report drafts. |
+| ClassificationService | Performs AI-assisted asset classification. |
+| MatchingService | Matches requests with available assets. |
+| RecommendationService | Generates sustainable-action recommendations. |
+| AssistantService | Handles natural-language questions. |
+| AIReportService | Generates AI-assisted reports. |
 | DuplicateDetector | Detects possible duplicate listings. |
-| MaintenancePredictor | Produces maintenance-risk predictions. |
-| OverrideService | Stores user overrides and review actions. |
+| MaintenancePredictor | Identifies possible maintenance needs. |
+| OverrideService | Stores human overrides. |
 | FeedbackService | Stores AI feedback. |
 | SustainabilityService | Calculates sustainability indicators. |
-| ReuseEvent | Stores reuse activity and avoided-purchase information. |
-| EmissionFactor | Stores emission-factor information. |
+
+### Sustainability Data Classes
+
+| Class | Responsibility |
+|---|---|
+| ReuseEvent | Records reuse and avoided-purchase events. |
+| EmissionFactor | Stores carbon-emission factors and sources. |
 | Figures | Represents calculated sustainability figures and assumptions. |
-| AIController | Exposes AI functions to the application. |
-| DashboardController | Provides sustainability dashboard information. |
 
-# 4. User Interface Mockups
 
-## 4.1 AI Match Review
+# 3. User Interface Mockups
 
-**Diagram/image file:** 
-The AI match-review page shall show:
+## 3.1 AI Match Review
 
-- ranked assets
-- compatibility score
-- explanation/reason
-- confidence information
-- warning when confidence is low
-- option to accept a match
-- option to choose another asset
-- AI feedback control
+The AI Match Review screen should display:
 
-## 4.2 Sustainability Recommendation
+- Ranked matches
+- Compatibility score
+- Explanation
+- Confidence information
+- Low-confidence warning
+- Accept match option
+- Choose another asset option
+- Feedback control
 
-**Diagram/image file:** 
-The screen shall show:
 
-- recommended action
-- confidence
-- explanation
-- alternative actions
-- accept/change/reject controls
-- override reason field
-- clear statement that approval is still required
+## 3.2 Sustainability Recommendation
 
-## 4.3 Assistant
+The Sustainability Recommendation screen should display:
 
-**Diagram/image file:** 
-The assistant interface shall show:
+- Recommended action
+- Confidence
+- Explanation
+- Alternative actions
+- Accept option
+- Change option
+- Reject option
+- Override reason field
 
-- user question
+The interface must clearly state that the AI recommendation does not automatically approve the action.
+
+
+## 3.3 Assistant Interface
+
+The assistant interface should provide:
+
+- Natural-language input
 - AI response
-- links to relevant assets or pages
-- refusal when an action requires formal approval
-- feedback option
+- Links to relevant assets or pages
+- Clear refusal when the requested action requires formal approval
+- Feedback controls
 
-## 4.4 AI Report Review
 
-**Diagram/image file:** 
+## 3.4 AI Report Review
 
-The report screen shall show:
+The AI Report Review screen should provide:
 
-- report title
-- reporting period
-- AI-generated status
-- generated summary
-- flagged figure mismatches
-- edit control
-- regenerate control
-- mark as reviewed control
-- export disabled until review
+- Report title
+- Reporting period
+- AI-generated label
+- Generated summary
+- Figure mismatch warnings
+- Edit option
+- Regenerate option
+- Mark as reviewed option
+- Export option after review
 
-## 4.5 Sustainability Dashboard
 
-**Diagram/image file:** 
-The dashboard shall show:
+## 3.5 Sustainability Dashboard
 
-- assets reused
-- avoided purchases
-- estimated financial savings
-- estimated CO2 reduction
-- reuse rate
-- repair rate
-- waste diversion
-- asset-life extension
-- assumptions for estimates
-- missing-data warnings
-- export option
+The sustainability dashboard should display:
 
-## 4.6 Duplicate Warning and Maintenance Forecast
+- Reuse count
+- Avoided purchases
+- Waste diversion
+- Reuse rate
+- Repair rate
+- Financial savings
+- Estimated carbon reduction
+- Asset-life extension
+- Assumptions
+- Missing-data warnings
 
-**Diagram/image file:** 
 
-The interface shall show:
+## 3.6 Duplicate Detection and Maintenance Forecast
 
-- possible duplicate listing
-- similarity score
-- existing matching listing
-- cancel or publish-anyway option
-- maintenance risk ranking
-- reason for risk
-- “not enough data” status
-- schedule inspection option
+The duplicate-listing screen should display:
 
-# 5. Traceability
+- New listing
+- Possible existing duplicate
+- Similarity score
+- Cancel option
+- Continue option
 
-| Diagram | Use Case | Requirements |
+The maintenance forecast should display:
+
+- Asset
+- Risk level
+- Reason
+- Insufficient-data indicator
+- Schedule inspection option
+
+
+# 4. Traceability
+
+| Design Element | Use Case | Related Requirements |
 |---|---|---|
-| DFD 6.1, Sequence 2.1 | UC-26 Classify Asset | FR-AI-01 to FR-AI-15, FR-AI-X-01, FR-AI-X-02 |
-| DFD 6.2, Sequence 2.2 | UC-27 Review AI Match | FR-AI-16 to FR-AI-35 |
-| DFD 6.3, Sequence 2.3 | UC-28 Review Sustainability Recommendation | FR-AI-36 to FR-AI-49, FR-SUS-27 to FR-SUS-31 |
-| DFD 6.4, Sequence 2.4 | UC-29 Ask the Assistant | FR-AI-50 to FR-AI-59 |
-| DFD 6.5, Sequence 2.5 | UC-30 Generate AI Report | FR-AI-60 to FR-AI-70 |
-| DFD 7.1 to 7.3, Sequence 2.6 | UC-31 View Sustainability Dashboard | FR-SUS-01 to FR-SUS-31 |
-| DFD 6.8, Sequence 2.7 | UC-32 Override an AI Output | FR-AI-X-03, FR-AI-X-04 |
-| DFD 6.6, Sequence 2.8 | UC-33 Detect Duplicate Listings | FR-AI requirements to be confirmed |
-| DFD 6.7, Sequence 2.9 | UC-34 Predict Maintenance Need | FR-AI requirements to be confirmed |
-| DFD 6.8, Sequence 2.10 | UC-35 Submit AI Feedback | FR-AI requirements to be confirmed |
-| AI Module Class Diagram | All AI Use Cases | FR-AI-X-05 to FR-AI-X-17 |
-| AI Module Class Diagram | Privacy and performance constraints | NFR-04, NFR-14 |
+| Sequence 1.1 | UC-26 Classify Asset | FR-AI-01 to FR-AI-15 |
+| Sequence 1.2 | UC-27 AI Match | FR-AI-16 to FR-AI-35 |
+| Sequence 1.3 | UC-28 Sustainability Recommendation | FR-AI-36 to FR-AI-49 |
+| Sequence 1.4 | UC-29 Assistant | FR-AI-50 to FR-AI-59 |
+| Sequence 1.5 | UC-30 AI Report | FR-AI-60 to FR-AI-70 |
+| Sequence 1.6 | UC-31 Sustainability Dashboard | FR-SUS-01 to FR-SUS-31 |
+| Sequence 1.7 | UC-32 AI Override | FR-AI-X-03 to FR-AI-X-04 |
+| Sequence 1.8 | UC-33 Duplicate Detection | FR-AI requirements to be confirmed |
+| Sequence 1.9 | UC-34 Maintenance Prediction | FR-AI requirements to be confirmed |
+| Sequence 1.10 | UC-35 AI Feedback | FR-AI requirements to be confirmed |
+| AI Module Class Diagram | All AI use cases | FR-AI-X-01 to FR-AI-X-17 |
+| Sustainability Classes | UC-28, UC-31 | FR-SUS-01 to FR-SUS-31 |
 
