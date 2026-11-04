@@ -5,7 +5,7 @@
 
 This file holds what all four of us share: the architecture, the context diagram, the Level 0 DFD, the ER diagram and the data rules. Each member has their own file with sequence diagrams, a class diagram and UI mockups.
 
-Most diagrams are written in Mermaid, so GitHub draws them when you open the file. The context diagram and the Level 0 DFD are pictures (`00_context_diagram.png` and `00_level0_dfd.png`) that must be in the same folder. The requirement, rule and use case IDs come from our Phase 3 document.
+
 
 | File | Owner | Use cases covered |
 |---|---|---|
@@ -236,7 +236,8 @@ Drawing symbols in the Level 0 picture: a rounded box with a number on top is a 
 
 The picture follows the lecture notation. To keep it readable, roles of the same kind are grouped in two boxes (the context diagram above shows each role on its own): "Department Staff" means DR and AC, and "Procurement and Sustainability Officers" means PO and SO. The picture is large, so click it on GitHub to zoom in.
 
-![Level 0 DFD](00_level0_dfd.png)
+<img width="2340" height="1300" alt="00_context_diagram" src="https://github.com/user-attachments/assets/6a99c0a2-6bbf-404a-80c0-e90dc80088fd" />
+
 
 ## 4.3 Process List
 
