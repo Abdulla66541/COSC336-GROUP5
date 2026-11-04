@@ -1,779 +1,836 @@
-# Phase 4 & 5 – Part 4: AI Layer and Sustainability
+# Phase 4 & 5 – Part 1: Assets, Marketplace and Requests
 
-**Owner:** Abdulla
+**Use Cases:** UC-01 to UC-10
 
-**Use cases:** UC-26 to UC-35
+**Requirement Groups:** FR-AST, FR-MKT, FR-REQ, FR-SRC, FR-RSV
 
-**Requirement groups:** FR-AI-01 to FR-AI-70, FR-AI-X-01 to FR-AI-X-17, FR-SUS-01 to FR-SUS-31
+**Main Classes:** Asset, Category, AssetMedia, Listing, Request, Reservation, WatchlistItem
 
-**Data stores:** D10 AI Output Log, D11 Sustainability Records
+The shared architecture, context diagram, Level 0 DFD, and ER diagram are documented in `00_architecture_and_shared_design.md`.
 
-**Tables:** AI_OUTPUT, AI_OVERRIDE, AI_FEEDBACK, REUSE_EVENT, EMISSION_FACTOR
+The Data Flow Diagrams for this part are handled separately by another team member.
 
-**Common AI Integration Path:**
+---
 
-Service → AI Facade → Privacy Filter → AI Adapter → AI Service → Answer Checker → AI Output Log
+# 1. Sequence Diagrams
 
+Sequence diagrams show how users interact with the system and how information moves between the website, services, and database.
 
-# 1. Sequence Diagrams and Use Cases
+The diagrams below cover UC-01 to UC-10.
 
+## 1.1 UC-01 Register Asset
 
-## 1.1 UC-26 – Classify Asset
+This use case allows an Asset Custodian or Department Representative to register a new asset.
 
-```mermaid
-sequenceDiagram
-    actor AC as Asset Custodian
-    participant UI as Web Page
-    participant AIC as AIController
-    participant CS as ClassificationService
-    participant AF as AIFacade
-    participant AI as AI Service
-    participant LOG as AI Output Logger
-    participant DB as Database
-
-    AC->>UI: Click Suggest category
-    UI->>AIC: Request classification
-    AIC->>CS: classify(assetData)
-    CS->>AF: Request AI classification
-    AF->>AI: Classify asset
-
-    alt AI responds within 15 seconds
-        AI-->>AF: Category, confidence score, short reason
-        AF-->>CS: AI result
-
-        alt Confidence is low
-            CS-->>AIC: Result + warning
-        else Result is valid
-            CS-->>AIC: Result
-        end
-
-    else AI timeout
-        AF-->>CS: Timeout
-        CS-->>AIC: Manual classification
-    end
-
-    CS->>LOG: Log AI result
-    LOG->>DB: Save output
-
-    AIC-->>UI: Display suggestion
-    UI-->>AC: Show category, confidence and reason
-
-    alt User accepts
-        AC->>UI: Accept classification
-        UI->>DB: Save final classification
-    else User changes
-        AC->>UI: Change classification
-        UI->>DB: Save user selection
-        UI->>LOG: Record override
-    end
-```
-
-### Use Case Details
-
-| Field | Description |
-|---|---|
-| Use Case ID | UC-26 |
-| Name | Classify Asset |
-| Primary Actor | Asset Custodian |
-| Secondary Actor | AI Service |
-| Goal | Obtain an AI-generated suggested category for an asset. |
-| Preconditions | The asset has a name or description available for classification. |
-| Trigger | The Asset Custodian registers or edits an asset and requests a category suggestion. |
-| Main Flow | 1. The Asset Custodian requests a category suggestion. 2. The system sends the available asset text or photo information to the AI function. 3. The AI returns a suggested category, confidence score and short reason. 4. The system displays the result. 5. The Asset Custodian reviews the suggestion. 6. The user accepts or changes the category. 7. The system saves the final category and the AI suggestion. |
-| Alternative Flow | A1. The AI does not answer within 15 seconds: the user selects a category manually. A2. The confidence is low: the system displays a warning. |
-| Postconditions | The asset has a category selected by a person. |
-| Business Rules | BR-11, BR-12 |
-| Related Requirements | FR-AI-01 to FR-AI-15, FR-AI-X-01 to FR-AI-X-02 |
-
-
-## 1.2 UC-27 – View, Accept or Override Match
+The system checks the asset details, prevents duplicates, and may use AI to suggest a category.
 
 ```mermaid
 sequenceDiagram
-    actor U as Requester / Asset Custodian
+    actor U as AC or DR
     participant UI as Web Page
-    participant AIC as AIController
-    participant MS as MatchingService
-    participant AF as AIFacade
-    participant AI as AI Service
+    participant S as AssetService
     participant DB as Database
-    participant LOG as AI Output Logger
-
-    U->>UI: Request AI matches
-    UI->>AIC: Request ranked matches
-    AIC->>MS: Find matches
-    MS->>DB: Read request and active listings
-    DB-->>MS: Request and listing data
-    MS->>AF: Request AI matching
-    AF->>AI: Rank available assets
-
-    alt AI returns matches
-        AI-->>AF: Ranked matches, score and reason
-        AF-->>MS: AI result
-        MS->>LOG: Log AI output
-        MS-->>AIC: Ranked matches
-    else AI timeout or unavailable
-        AF-->>MS: No AI result
-        MS-->>AIC: Use normal search
-    end
-
-    AIC-->>UI: Display results
-    UI-->>U: Show ranked matches
-
-    alt User accepts a match
-        U->>UI: Accept selected match
-    else User overrides
-        U->>UI: Select another match
-        UI->>LOG: Record override
-    end
-```
-
-### Use Case Details
-
-| Field | Description |
-|---|---|
-| Use Case ID | UC-27 |
-| Name | View, Accept or Override Match |
-| Primary Actor | Requester / Asset Custodian |
-| Secondary Actor | AI Service |
-| Goal | Show ranked asset matches that may satisfy a request. |
-| Preconditions | A valid request exists and suitable active listings are available for comparison. |
-| Trigger | The user requests matching assets. |
-| Main Flow | 1. The system retrieves the request and active listings. 2. The information is passed to the AI matching function. 3. The AI returns ranked matches with a score and reason. 4. The system displays the matches. 5. The user reviews the suggested matches. 6. The user accepts a match or selects another option. |
-| Alternative Flow | A1. The AI does not return a usable result: the system falls back to the normal search process. A2. The user disagrees with the suggested match: the user overrides the result using UC-32. |
-| Postconditions | The user has reviewed the AI-generated matches and may continue with a selected asset. |
-| Business Rules | The AI recommendation does not automatically reserve, approve or transfer an asset. |
-| Related Requirements | FR-AI-16 to FR-AI-35 |
-
-
-## 1.3 UC-28 – Review Sustainability Recommendation
-
-```mermaid
-sequenceDiagram
-    actor SO as Sustainability Officer
-    participant UI as Web Page
-    participant AIC as AIController
-    participant RS as RecommendationService
-    participant DB as Database
-    participant AF as AIFacade
-    participant AI as AI Service
-    participant LOG as AI Output Logger
-
-    SO->>UI: Request sustainability recommendation
-    UI->>AIC: Request recommendation
-    AIC->>RS: recommend(assetId)
-    RS->>DB: Read asset and maintenance information
-    DB-->>RS: Condition, history and asset data
-
-    alt Enough information
-        RS->>AF: Request AI recommendation
-        AF->>AI: Analyse asset
-        AI-->>AF: Action, reason, confidence, expected saving
-        AF-->>RS: Recommendation
-        RS->>LOG: Log AI output
-        RS-->>AIC: Recommendation
-        AIC-->>UI: Display recommendation
-        UI-->>SO: Show recommendation
-
-        alt User accepts
-            SO->>UI: Accept recommendation
-        else User changes or rejects
-            SO->>UI: Change or reject recommendation
-            UI->>LOG: Record override
-        end
-
-    else Insufficient information
-        RS-->>AIC: Not enough data
-        AIC-->>UI: Display warning
-    end
-```
-
-### Use Case Details
-
-| Field | Description |
-|---|---|
-| Use Case ID | UC-28 |
-| Name | Review Sustainability Recommendation |
-| Primary Actor | Sustainability Officer |
-| Secondary Actor | AI Service |
-| Goal | Provide a sustainability recommendation for the next action that may be taken for an asset. |
-| Preconditions | The asset exists and relevant asset condition or maintenance information is available. |
-| Trigger | The Sustainability Officer requests a sustainability recommendation. |
-| Main Flow | 1. The system retrieves the asset condition and history. 2. The information is passed to the AI function. 3. The AI generates a recommendation, reason, confidence and expected saving. 4. The system displays the recommendation. 5. The Sustainability Officer reviews it. 6. The officer accepts, changes or rejects the recommendation. |
-| Alternative Flow | A1. There is not enough information to generate a useful recommendation: the system displays a warning. |
-| Postconditions | The recommendation has been reviewed by the Sustainability Officer. |
-| Business Rules | AI recommendations require human review. Disposal is treated as the last option. |
-| Related Requirements | FR-AI-36 to FR-AI-49, FR-SUS-27 to FR-SUS-31 |
-
-
-## 1.4 UC-29 – Ask the Assistant
-
-```mermaid
-sequenceDiagram
-    actor U as Authorised User
-    participant UI as Web Page
-    participant AIC as AIController
-    participant SEC as Security Check
-    participant AS as AssistantService
-    participant PF as PrivacyFilter
-    participant DB as Database
-    participant AF as AIFacade
-    participant AI as AI Service
-    participant LOG as AI Output Logger
-
-    U->>UI: Enter question
-    UI->>AIC: Submit question
-    AIC->>SEC: Check permission
-    SEC-->>AIC: Permission result
-    AIC->>AS: Ask question
-    AS->>DB: Retrieve permitted data
-    DB-->>AS: Permitted information
-    AS->>PF: Remove unnecessary personal data
-    PF-->>AS: Filtered information
-    AS->>AF: Request AI answer
-    AF->>AI: Generate answer
-
-    alt Answer available
-        AI-->>AF: Answer
-        AF-->>AS: AI result
-    else AI cannot answer or times out
-        AF-->>AS: No usable answer
-        AS-->>AIC: Use normal search or state no answer
-    end
-
-    AS->>LOG: Log AI interaction
-    AS-->>AIC: Response
-    AIC-->>UI: Display response
-    UI-->>U: Show answer
-```
-
-### Use Case Details
-
-| Field | Description |
-|---|---|
-| Use Case ID | UC-29 |
-| Name | Ask the Assistant |
-| Primary Actor | Authorised User |
-| Secondary Actor | AI Service |
-| Goal | Allow users to ask questions about the system using natural language. |
-| Preconditions | The user is logged in and has permission to access the requested information. |
-| Trigger | The user submits a question to the assistant. |
-| Main Flow | 1. The user enters a natural-language question. 2. The system checks the user's permissions. 3. Only permitted data is retrieved. 4. The information is passed through the privacy filter. 5. The AI generates an answer. 6. The system displays the answer to the user. 7. The AI output is logged. |
-| Alternative Flow | A1. The requested information is not available: the assistant states that it does not have enough information. A2. The AI does not respond: the system falls back to normal search where appropriate. |
-| Postconditions | The user receives an answer or an indication that the information is unavailable. |
-| Business Rules | The assistant must not guess when information is unavailable. The assistant cannot change asset data or perform approval actions. |
-| Related Requirements | FR-AI-50 to FR-AI-59 |
-
-
-## 1.5 UC-30 – Generate AI Report
-
-```mermaid
-sequenceDiagram
-    actor U as Administrator / Sustainability Officer
-    participant UI as Web Page
-    participant AIC as AIController
-    participant AR as AIReportService
-    participant SS as SustainabilityService
-    participant DB as Database
-    participant AF as AIFacade
-    participant AI as AI Service
-    participant LOG as AI Output Logger
-
-    U->>UI: Select reporting period
-    UI->>AIC: Generate AI report
-    AIC->>AR: generateReport(period)
-    AR->>SS: Get sustainability figures
-    SS->>DB: Read sustainability records
-    DB-->>SS: Sustainability data
-    SS-->>AR: Calculated figures
-    AR->>DB: Read request and maintenance summaries
-    DB-->>AR: Summary data
-    AR->>AF: Request report draft
-    AF->>AI: Generate written summary
-
-    alt AI returns draft
-        AI-->>AF: Draft report
-        AF-->>AR: Draft
-        AR->>AR: Check figures against source data
-        AR->>LOG: Log AI output
-        AR-->>AIC: Draft report
-        AIC-->>UI: Display draft
-        UI-->>U: Show report for review
-        U->>UI: Edit / approve reviewed report
-        UI->>DB: Save reviewed report
-    else AI unavailable
-        AF-->>AR: No draft
-        AR-->>AIC: Report summary unavailable
-        AIC-->>UI: Display message
-    end
-```
-
-### Use Case Details
-
-| Field | Description |
-|---|---|
-| Use Case ID | UC-30 |
-| Name | Generate AI Report |
-| Primary Actor | Administrator / Sustainability Officer |
-| Secondary Actor | AI Service |
-| Goal | Generate a draft written report using recorded system information. |
-| Preconditions | The user has permission to generate the report and the required source data is available. |
-| Trigger | The user selects a reporting period and requests an AI-generated report. |
-| Main Flow | 1. The system gathers the required sustainability, request and maintenance information. 2. The information is passed to the AI report function. 3. The AI generates a draft summary. 4. Important figures are checked against the underlying data. 5. The draft is displayed to the user. 6. The user edits and reviews the draft. 7. The reviewed report is saved. |
-| Alternative Flow | A1. The AI does not respond: the report summary is not generated. A2. A figure does not agree with the source data: the user is informed so the report can be checked. |
-| Postconditions | A human-reviewed report may be saved. |
-| Business Rules | AI-generated reports remain drafts until checked by an authorised person. |
-| Related Requirements | FR-AI-60 to FR-AI-70 |
-
-
-## 1.6 UC-31 – View Sustainability Dashboard
-
-```mermaid
-sequenceDiagram
-    actor U as Sustainability Officer / Administrator
-    participant UI as Web Page
-    participant DC as DashboardController
-    participant SS as SustainabilityService
-    participant DB as Database
-
-    U->>UI: Open sustainability dashboard
-    UI->>DC: Request dashboard
-    DC->>SS: Get sustainability figures
-    SS->>DB: Read sustainability records
-    DB-->>SS: Reuse and sustainability data
-    SS->>DB: Read asset and maintenance information
-    DB-->>SS: Supporting data
-    SS->>SS: Calculate sustainability indicators
-
-    alt Required emission factor exists
-        SS->>SS: Calculate estimated carbon reduction
-    else Emission factor missing
-        SS->>SS: Mark carbon figure as Not enough data
-    end
-
-    SS-->>DC: Sustainability figures
-    DC-->>UI: Dashboard data
-    UI-->>U: Display dashboard
-```
-
-### Use Case Details
-
-| Field | Description |
-|---|---|
-| Use Case ID | UC-31 |
-| Name | View Sustainability Dashboard |
-| Primary Actor | Sustainability Officer / Administrator |
-| Goal | Display sustainability information calculated from recorded reuse and asset lifecycle activity. |
-| Preconditions | Relevant sustainability information is available in the system. |
-| Trigger | The authorised user opens the Sustainability Dashboard. |
-| Main Flow | 1. The user opens the dashboard. 2. The system retrieves sustainability records. 3. The system calculates the available sustainability figures. 4. Estimated figures and assumptions are identified. 5. The dashboard displays the results. |
-| Alternative Flow | A1. Required information such as an emission factor is unavailable: the affected figure is shown as unavailable or not enough data. |
-| Postconditions | The user can view the available sustainability information. |
-| Business Rules | Estimated figures must be shown as estimates and the source or assumptions must be available. |
-| Related Requirements | FR-SUS-01 to FR-SUS-31 |
-
-
-## 1.7 UC-32 – Override an AI Output
-
-```mermaid
-sequenceDiagram
-    actor U as Asset Custodian / Administrator / Sustainability Officer
-    participant UI as Web Page
-    participant AIC as AIController
-    participant SEC as Security Check
-    participant OS as OverrideService
-    participant DB as Database
-
-    U->>UI: Select override
-    UI-->>U: Show override form
-    U->>UI: Enter final value and reason
-    UI->>AIC: Submit override
-    AIC->>SEC: Check override permission
-
-    alt User has permission
-        SEC-->>AIC: Allowed
-        AIC->>OS: Save override
-        OS->>DB: Store original AI output, final value and reason
-
-        alt Save succeeds
-            DB-->>OS: Saved
-            OS-->>AIC: Success
-            AIC-->>UI: Show final value
-        else Database error
-            DB-->>OS: Save failed
-            OS-->>AIC: Failure
-            AIC-->>UI: Display error
-        end
-
-    else User does not have permission
-        SEC-->>AIC: Denied
-        AIC-->>UI: Override denied
-    end
-```
-
-### Use Case Details
-
-| Field | Description |
-|---|---|
-| Use Case ID | UC-32 |
-| Name | Override an AI Output |
-| Primary Actor | Asset Custodian / Administrator / Sustainability Officer |
-| Goal | Allow an authorised person to reject or change an AI-generated output. |
-| Preconditions | An AI output exists and the user has permission to override it. |
-| Trigger | The user chooses to change or reject an AI output. |
-| Main Flow | 1. The system displays the AI output. 2. The user selects the override option. 3. The user provides the final value and reason. 4. The system checks permission. 5. The override is stored. 6. The original AI output and final human decision remain recorded. |
-| Alternative Flow | A1. The user cancels the override: no change is saved. |
-| Postconditions | The final human-selected value and override reason are recorded. |
-| Business Rules | The authorised human decision is the final decision. |
-| Related Requirements | FR-AI-X-03 to FR-AI-X-04, BR-12 |
-
-
-## 1.8 UC-33 – Detect Duplicate Listings
-
-```mermaid
-sequenceDiagram
-    actor AC as Asset Custodian
-    participant UI as Web Page
-    participant DD as DuplicateDetector
-    participant DB as Database
-    participant AF as AIFacade
-    participant AI as AI Service
-    participant LOG as AI Output Logger
-
-    AC->>UI: Create or publish listing
-    UI->>DD: Check for duplicate
-    DD->>DB: Retrieve active listings
-    DB-->>DD: Existing listings
-    DD->>AF: Request duplicate comparison
-    AF->>AI: Compare new listing with existing listings
-
-    alt AI available
-        AI-->>AF: Similarity results
-        AF-->>DD: Possible duplicates
-        DD->>LOG: Log result
-
-        alt Similar listing found
-            DD-->>UI: Duplicate warning + similarity
-            UI-->>AC: Show possible duplicate
-
-            alt User cancels
-                AC->>UI: Cancel listing
-            else User continues
-                AC->>UI: Continue listing
-            end
-
-        else No duplicate found
-            DD-->>UI: No duplicate detected
-            UI-->>AC: Continue normally
-        end
-
-    else AI unavailable
-        AF-->>DD: AI unavailable
-        DD-->>UI: Duplicate check unavailable
-        UI-->>AC: Continue with warning
-    end
-```
-
-### Use Case Details
-
-| Field | Description |
-|---|---|
-| Use Case ID | UC-33 |
-| Name | Detect Duplicate Listings |
-| Primary Actor | Asset Custodian |
-| Secondary Actor | AI Service |
-| Goal | Warn the Asset Custodian when a new listing may duplicate an existing listing. |
-| Preconditions | A new listing has been entered and existing listings are available for comparison. |
-| Trigger | The Asset Custodian creates or publishes a listing. |
-| Main Flow | 1. The system retrieves existing listings. 2. The new listing is compared with existing listings. 3. The AI returns similarity information. 4. If a possible duplicate exists, the system displays a warning. 5. The Asset Custodian decides whether to cancel or continue. |
-| Alternative Flow | A1. No duplicate is found: the listing continues normally. A2. The AI service is unavailable: the user is informed that the duplicate check could not be completed. |
-| Postconditions | The Asset Custodian decides whether the new listing should continue. |
-| Business Rules | The system does not automatically merge or delete listings. A human makes the final decision. |
-| Related Requirements | No dedicated functional requirement was assigned in Phase 3. This must be confirmed with the group. |
-
-
-## 1.9 UC-34 – Predict Maintenance Need
-
-```mermaid
-sequenceDiagram
-    actor MS as Maintenance Staff
-    participant UI as Web Page
-    participant AIC as AIController
-    participant MP as MaintenancePredictor
-    participant DB as Database
-    participant AF as AIFacade
-    participant AI as AI Service
-    participant LOG as AI Output Logger
-
-    MS->>UI: Request maintenance forecast
-    UI->>AIC: Request prediction
-    AIC->>MP: Predict maintenance need
-    MP->>DB: Read asset age and condition
-    DB-->>MP: Asset information
-    MP->>DB: Read maintenance history
-    DB-->>MP: Maintenance records
-    MP->>AF: Request AI prediction
-    AF->>AI: Analyse maintenance risk
-
-    alt Valid prediction returned
-        AI-->>AF: Risk ranking and reason
-        AF-->>MP: Prediction
-        MP->>LOG: Log AI result
-        MP-->>AIC: Maintenance risk list
-        AIC-->>UI: Display risk list
-        UI-->>MS: Show assets and reasons
-        MS->>UI: Schedule inspection if needed
-
-    else Insufficient data
-        AI-->>AF: Not enough data
-        AF-->>MP: Insufficient information
-        MP-->>AIC: Not enough data
-        AIC-->>UI: Display warning
-
-    else AI timeout or invalid result
-        AF-->>MP: No usable prediction
-        MP-->>AIC: Use normal inspection process
-        AIC-->>UI: Display normal inspection option
-    end
-```
-
-### Use Case Details
-
-| Field | Description |
-|---|---|
-| Use Case ID | UC-34 |
-| Name | Predict Maintenance Need |
-| Primary Actor | Maintenance Staff |
-| Secondary Actor | AI Service |
-| Goal | Identify assets that may need maintenance or inspection. |
-| Preconditions | Asset age, condition or maintenance history is available. |
-| Trigger | Maintenance Staff requests the maintenance prediction view. |
-| Main Flow | 1. The system retrieves asset and maintenance information. 2. The AI analyses the available data. 3. The AI returns a risk ranking and reason. 4. The system displays the result. 5. Maintenance Staff reviews the prediction. 6. Maintenance Staff may schedule an inspection. |
-| Alternative Flow | A1. There is insufficient data: the system displays that there is not enough information. A2. The AI does not return a valid result: normal inspection procedures are used. |
-| Postconditions | Maintenance Staff has reviewed the predicted maintenance risks. |
-| Business Rules | AI maintenance predictions are advisory. Maintenance actions remain under human control. |
-| Related Requirements | No dedicated functional requirement was assigned in Phase 3. This must be confirmed with the group. |
-
-
-## 1.10 UC-35 – Submit AI Feedback
-
-```mermaid
-sequenceDiagram
-    actor U as Authorised User
-    participant UI as Web Page
-    participant AIC as AIController
-    participant FS as FeedbackService
-    participant DB as Database
-
-    U->>UI: Select AI feedback option
-    UI-->>U: Show feedback controls
-    U->>UI: Select rating and optional comment
-    UI->>AIC: Submit feedback
-    AIC->>FS: Save feedback
-    FS->>DB: Check existing feedback
-
-    alt Duplicate feedback exists
-        DB-->>FS: Existing feedback found
-        FS-->>AIC: Do not create duplicate
-        AIC-->>UI: Feedback already recorded
-
-    else New feedback
-        DB-->>FS: No duplicate
-        FS->>DB: Save feedback
-
-        alt Save succeeds
-            DB-->>FS: Saved
-            FS-->>AIC: Success
-            AIC-->>UI: Confirm submission
-            UI-->>U: Thank user
-        else Save fails
-            DB-->>FS: Error
-            FS-->>AIC: Failure
-            AIC-->>UI: Ask user to retry
+    participant AI as AI Module
+
+    U->>UI: Enter asset details
+    UI->>S: Submit asset
+    S->>S: Check permission and validate
+
+    alt Invalid information
+        S-->>UI: Show errors
+    else Valid information
+        S->>DB: Check duplicate tag
+        DB-->>S: Result
+
+        alt Duplicate found
+            S-->>UI: Show duplicate warning
+        else No duplicate
+            S->>AI: Suggest category
+            AI-->>S: Suggestion or fallback
+            S-->>UI: Show suggestion
+            U->>UI: Confirm category
+            UI->>S: Save asset
+            S->>DB: Store asset
+            S->>DB: Record asset history
+            S-->>UI: Registration successful
         end
     end
 ```
 
-### Use Case Details
+### Explanation
 
-| Field | Description |
+The user enters the asset information, such as name, category, quantity, condition, location, and department.
+
+The system validates the information and checks whether the asset tag already exists.
+
+AI may suggest a category, but the user confirms the final category.
+
+If AI does not respond within 15 seconds, the user can choose the category manually.
+
+Finally, the asset is saved and its registration is recorded in history.
+
+**Related Requirements:** FR-AST, FR-AI, BR-11, BR-13.
+
+---
+
+## 1.2 UC-02 Edit Asset
+
+This use case allows an authorized user to update an existing asset record.
+
+```mermaid
+sequenceDiagram
+    actor U as AC or DR
+    participant UI as Web Page
+    participant S as AssetService
+    participant DB as Database
+
+    U->>UI: Open asset and click Edit
+    UI->>S: Get asset details
+    S->>DB: Read asset
+    DB-->>S: Current information
+    S-->>UI: Show edit form
+
+    U->>UI: Change details and click Save
+    UI->>S: Submit changes
+    S->>S: Check permission and validate
+
+    alt Invalid information
+        S-->>UI: Show errors
+    else Valid information
+        S->>DB: Check latest version
+        DB-->>S: Version result
+
+        alt Asset was changed by someone else
+            S-->>UI: Ask user to reload
+        else No conflict
+            S->>DB: Save new values
+            S->>DB: Record old and new values
+            S-->>UI: Update successful
+        end
+    end
+```
+
+### Explanation
+
+The user opens an existing asset and clicks Edit.
+
+The system displays the current asset information.
+
+After the user makes changes, the system validates them.
+
+If the asset was already modified by another user, the system asks the user to reload the latest version.
+
+Otherwise, the changes are saved and the previous information remains in history.
+
+**Related Requirements:** FR-AST, FR-HST, FR-AUD, BR-13, BR-14.
+
+---
+
+## 1.3 UC-03 Publish Surplus Asset
+
+This use case allows an Asset Custodian or Department Representative to publish an unused asset in the marketplace.
+
+```mermaid
+sequenceDiagram
+    actor U as AC or DR
+    participant UI as Web Page
+    participant S as MarketplaceService
+    participant DB as Database
+    participant AI as AI Module
+
+    U->>UI: Click Publish as Surplus
+    UI->>S: Request publication
+    S->>DB: Check asset availability
+    DB-->>S: Asset status
+
+    alt Asset cannot be published
+        S-->>UI: Show error
+    else Asset is eligible
+        S->>AI: Suggest title and keywords
+        AI-->>S: Suggestion or fallback
+        S-->>UI: Show publication form
+        U->>UI: Review and confirm
+        UI->>S: Publish asset
+        S->>DB: Check existing listings
+        DB-->>S: Duplicate check
+
+        alt Possible duplicate
+            S-->>UI: Warn user to review
+        else No duplicate
+            S->>DB: Save listing
+            S-->>UI: Publication successful
+        end
+    end
+```
+
+### Explanation
+
+The user selects an asset and chooses Publish as Surplus.
+
+The system checks whether the asset can be published.
+
+AI may suggest a better title or keywords, but the user can change them.
+
+The system also checks for possible duplicate listings.
+
+If a duplicate is found, the user is warned and can review it before deciding whether to continue.
+
+When publication is confirmed, the listing becomes available to authorized users.
+
+**Related Requirements:** FR-MKT, FR-AI, FR-NTF, BR-11, BR-13.
+
+---
+
+## 1.4 UC-04 Withdraw Listing
+
+This use case allows an authorized user to remove a marketplace listing.
+
+```mermaid
+sequenceDiagram
+    actor U as AC or DR
+    participant UI as Web Page
+    participant S as MarketplaceService
+    participant DB as Database
+    participant N as Notifications
+
+    U->>UI: Click Withdraw Listing
+    UI->>S: Request withdrawal
+    S->>DB: Check listing and transfer
+    DB-->>S: Current status
+
+    alt Approved transfer exists
+        S-->>UI: Withdrawal blocked
+    else Withdrawal allowed
+        S-->>UI: Ask for reason
+        U->>UI: Enter reason and confirm
+        UI->>S: Confirm withdrawal
+        S->>DB: Mark listing Withdrawn
+        S->>DB: Record withdrawal
+        S->>N: Notify affected users
+        S-->>UI: Withdrawal successful
+    end
+```
+
+### Explanation
+
+The user selects Withdraw Listing.
+
+The system checks whether an approved transfer is already in progress.
+
+If an approved transfer exists, withdrawal is blocked.
+
+Otherwise, the user enters a reason and confirms.
+
+The system marks the listing as Withdrawn and notifies affected requesters.
+
+**Related Requirements:** FR-MKT, FR-NTF, BR-06, BR-14.
+
+---
+
+## 1.5 UC-05 Submit Request
+
+This use case allows a Requester to submit a request for a resource.
+
+```mermaid
+sequenceDiagram
+    actor RQ as Requester
+    participant UI as Web Page
+    participant S as RequestService
+    participant DB as Database
+    participant AI as AI Module
+
+    RQ->>UI: Fill request form
+    UI->>S: Submit request
+    S->>S: Validate information
+
+    alt Invalid request
+        S-->>UI: Show errors
+    else Valid request
+        S->>DB: Save request
+        DB-->>S: Request ID
+        S->>AI: Find matching assets
+        AI-->>S: Matches or fallback
+        S-->>UI: Show request and matches
+    end
+```
+
+### Explanation
+
+The Requester enters the category, purpose, quantity, urgency, location, and required date.
+
+The system checks the information and creates the request.
+
+The request receives a unique ID and its status becomes Submitted.
+
+AI may suggest matching assets based on the request details.
+
+If AI is unavailable, the system uses normal search as a fallback.
+
+**Related Requirements:** FR-REQ, FR-AI, NFR-04.
+
+---
+
+## 1.6 UC-06 Search and Filter Assets
+
+This use case allows users to search for available assets using keywords and filters.
+
+```mermaid
+sequenceDiagram
+    actor RQ as Requester
+    participant UI as Web Page
+    participant S as SearchService
+    participant DB as Database
+
+    RQ->>UI: Enter keywords and filters
+    UI->>S: Search assets
+    S->>S: Check filters and permissions
+
+    alt Invalid filters
+        S-->>UI: Show filter error
+    else Valid filters
+        S->>DB: Find published assets
+        DB-->>S: Matching records
+
+        alt No results
+            S-->>UI: No matching assets
+        else Results found
+            S-->>UI: Display matching assets
+        end
+    end
+```
+
+### Explanation
+
+The user enters keywords and may filter assets by category, condition, department, location, quantity, or other criteria.
+
+The system validates the filters and searches available listings.
+
+Only assets that the user is authorized to view are displayed.
+
+If no assets match, the system displays "No matching resources found".
+
+**Related Requirements:** FR-SRC, FR-MKT, NFR-02.
+
+---
+
+## 1.7 UC-07 Reserve Asset
+
+This use case allows a Requester to reserve an available asset.
+
+```mermaid
+sequenceDiagram
+    actor RQ as Requester
+    participant UI as Web Page
+    participant S as ReservationService
+    participant DB as Database
+
+    RQ->>UI: Click Reserve
+    UI->>S: Request reservation
+    S->>DB: Check asset availability
+    DB-->>S: Status and free quantity
+
+    alt Asset unavailable or quantity insufficient
+        S-->>UI: Reservation rejected
+    else Reservation allowed
+        S->>DB: Save 7-day reservation
+        S->>DB: Update reserved quantity
+        S->>DB: Record reservation event
+        S-->>UI: Reservation confirmed
+    end
+```
+
+### Explanation
+
+The Requester selects an available asset and clicks Reserve.
+
+The system checks the asset's availability and existing reservations.
+
+If the requested quantity is not available, the reservation is rejected.
+
+Otherwise, the system creates the reservation.
+
+The reservation expires after seven days if the required approval is not completed.
+
+**Related Requirements:** FR-RSV, BR-04.
+
+---
+
+## 1.8 UC-08 Track Request
+
+This use case allows a Requester to check the progress of an existing request.
+
+```mermaid
+sequenceDiagram
+    actor RQ as Requester
+    participant UI as Web Page
+    participant S as RequestService
+    participant DB as Database
+
+    RQ->>UI: Open My Requests
+    UI->>S: Get my requests
+    S->>DB: Find requests for user
+    DB-->>S: Request list
+
+    alt No requests
+        S-->>UI: Show empty list
+    else Requests found
+        S-->>UI: Show request list
+        RQ->>UI: Select a request
+        UI->>S: Get request status
+        S->>DB: Read request details
+        DB-->>S: Status and history
+        S-->>UI: Show progress and next step
+    end
+```
+
+### Explanation
+
+The Requester opens the My Requests page.
+
+The system retrieves the user's requests and displays their current statuses.
+
+When the user selects a request, the system shows the status, progress, and next required action.
+
+If the user has no requests, an empty-list message is displayed.
+
+**Related Requirements:** FR-REQ, FR-HST.
+
+---
+
+## 1.9 UC-09 Cancel Request
+
+This use case allows a Requester to cancel a request that is no longer needed.
+
+```mermaid
+sequenceDiagram
+    actor RQ as Requester
+    participant UI as Web Page
+    participant S as RequestService
+    participant DB as Database
+    participant N as Notifications
+
+    RQ->>UI: Click Cancel Request
+    UI->>S: Request cancellation
+    S->>DB: Check request status
+    DB-->>S: Current status
+
+    alt Cancellation not allowed
+        S-->>UI: Administrator required
+    else Cancellation allowed
+        S-->>UI: Ask for confirmation
+        RQ->>UI: Confirm cancellation
+        UI->>S: Cancel request
+        S->>DB: Set status Cancelled
+        S->>DB: Release any reservation
+        S->>N: Notify asset owner
+        S-->>UI: Cancellation successful
+    end
+```
+
+### Explanation
+
+The Requester selects Cancel Request.
+
+The system checks whether the request is still eligible for cancellation.
+
+If a transfer has already been approved, the Requester must contact an Administrator.
+
+Otherwise, the request is cancelled and any active reservation is released.
+
+The asset owner is also notified.
+
+**Related Requirements:** FR-REQ, FR-RSV, BR-04, BR-14.
+
+---
+
+## 1.10 UC-10 Save Asset to Watchlist
+
+This use case allows a Requester to save an asset or search to their watchlist.
+
+```mermaid
+sequenceDiagram
+    actor RQ as Requester
+    participant UI as Web Page
+    participant S as SearchService
+    participant DB as Database
+    participant N as Notifications
+
+    RQ->>UI: Click Watch
+    UI-->>RQ: Show watch options
+    RQ->>UI: Select asset or search
+    UI->>S: Save watchlist item
+    S->>DB: Check existing watch
+    DB-->>S: Result
+
+    alt Already watched
+        S-->>UI: Offer to stop watching
+    else New watch
+        S->>DB: Save watchlist item
+        S-->>UI: Watch saved
+    end
+
+    opt Matching asset appears later
+        S->>N: Notify if enabled
+    end
+```
+
+### Explanation
+
+The Requester selects Watch on an asset or saved search.
+
+The system checks whether it is already in the watchlist.
+
+If it is not already saved, a new watchlist entry is created.
+
+The system may notify the Requester when a matching asset becomes available, depending on notification settings.
+
+**Related Requirements:** FR-SRC, FR-NTF.
+
+---
+
+## 1.11 Automatic Reservation Expiry
+
+The system checks reservations automatically and releases those that have expired.
+
+```mermaid
+sequenceDiagram
+    participant T as Daily Timer
+    participant S as ReservationService
+    participant DB as Database
+    participant N as Notifications
+
+    T->>S: Check old reservations
+    S->>DB: Find unapproved reservations past 7 days
+    DB-->>S: Expired reservations
+
+    loop Each expired reservation
+        S->>DB: Mark reservation Expired
+        S->>DB: Release reserved quantity
+        S->>DB: Record expiry event
+        S->>N: Notify requester
+    end
+```
+
+### Explanation
+
+A daily timer starts the reservation expiry check.
+
+The system identifies active reservations that have exceeded seven days without the required approval.
+
+It marks them as Expired and releases the reserved quantity.
+
+The Requester is notified about the expiry.
+
+**Related Requirements:** FR-RSV-05, BR-04.
+
+---
+
+# 2. Class Diagram
+
+The class diagram shows the main classes used in the asset, marketplace, and request modules.
+
+Entity classes store information, while service classes handle system operations.
+
+```mermaid
+classDiagram
+    class Category {
+        +int categoryId
+        +string name
+    }
+
+    class Asset {
+        +int assetId
+        +string tagNumber
+        +string name
+        +int quantity
+        +string status
+    }
+
+    class AssetMedia {
+        +int mediaId
+        +string filePath
+    }
+
+    class Listing {
+        +int listingId
+        +string status
+    }
+
+    class Request {
+        +int requestId
+        +int quantity
+        +string status
+    }
+
+    class Reservation {
+        +int reservationId
+        +int quantity
+        +date expiresAt
+        +string status
+    }
+
+    class WatchlistItem {
+        +int watchId
+        +string savedSearch
+    }
+
+    class AssetService {
+        +registerAsset()
+        +updateAsset()
+        +deactivateAsset()
+    }
+
+    class MarketplaceService {
+        +publish()
+        +withdraw()
+        +expireOldListings()
+    }
+
+    class RequestService {
+        +submitRequest()
+        +editRequest()
+        +cancelRequest()
+        +getStatus()
+    }
+
+    class SearchService {
+        +search()
+        +saveToWatchlist()
+    }
+
+    class ReservationService {
+        +reserve()
+        +release()
+        +expireOldReservations()
+    }
+
+    Category "1" --> "0..*" Asset
+    Asset "1" --> "0..*" AssetMedia
+    Asset "1" --> "0..*" Listing
+    Asset "1" --> "0..*" Reservation
+    Request "1" --> "0..*" Reservation
+    Asset "1" --> "0..*" WatchlistItem
+
+    AssetService ..> Asset
+    MarketplaceService ..> Listing
+    RequestService ..> Request
+    SearchService ..> Asset
+    SearchService ..> WatchlistItem
+    ReservationService ..> Reservation
+```
+
+## 2.1 Main Classes
+
+| Class | Purpose |
 |---|---|
-| Use Case ID | UC-35 |
-| Name | Submit AI Feedback |
-| Primary Actor | Authorised User |
-| Goal | Allow users to provide feedback about an AI-generated output. |
-| Preconditions | An AI output exists for the user to review. |
-| Trigger | The user chooses to provide feedback on an AI output. |
-| Main Flow | 1. The system displays the feedback controls. 2. The user chooses a rating and may enter a comment. 3. The system associates the feedback with the relevant AI output. 4. The feedback is saved. 5. The system confirms the submission. |
-| Alternative Flow | A1. Feedback for the same output has already been submitted: the system avoids creating a duplicate. A2. The feedback cannot be stored: the user is allowed to retry. |
-| Postconditions | The feedback is associated with the relevant AI output. |
-| Business Rules | Feedback is linked to the specific AI output being reviewed. |
-| Related Requirements | No dedicated functional requirement was assigned in Phase 3. This must be confirmed with the group. |
+| Category | Stores asset categories |
+| Asset | Stores the main asset information |
+| AssetMedia | Stores references to photographs and documents |
+| Listing | Represents an asset published on the marketplace |
+| Request | Represents a resource request |
+| Reservation | Stores reservation details and expiry |
+| WatchlistItem | Represents a watched asset or saved search |
 
+## 2.2 Service Classes
 
-# 2. Class Diagrams
+| Class | Responsibility | Related Requirements |
+|---|---|---|
+| AssetService | Register, edit, and deactivate assets | FR-AST-01 to 10 |
+| MarketplaceService | Publish, withdraw, and expire listings | FR-MKT-01 to 04 |
+| RequestService | Submit, edit, cancel, and track requests | FR-REQ-01 to 09 |
+| SearchService | Search, filter, sort, and manage watchlists | FR-SRC-01 to 07 |
+| ReservationService | Create, release, and expire reservations | FR-RSV-01 to 05 |
 
-## 2.1 AI Module
+The class diagram is simplified to show the main classes and relationships.
 
-The AI module contains the shared components used by the AI-enabled functions.
+The complete database structure is described in the shared ER diagram.
 
-### Main Classes
-
-| Class | Responsibility |
-|---|---|
-| AIFacade | Provides a controlled entry point to AI functionality. |
-| PrivacyFilter | Removes unnecessary personal information before external AI processing. |
-| AIAdapter | Defines a common interface for AI providers. |
-| LlmAdapter | Connects the system to the selected LLM service. |
-| FallbackService | Provides non-AI behaviour when the AI service is unavailable. |
-| AnswerChecker | Checks AI results before they are returned to the user. |
-| AIOutputLogger | Records AI outputs and related information. |
-| AIResult | Represents the result returned by an AI function. |
-| AIOutput | Represents a stored AI output. |
-| AIOverride | Records a human override of an AI output. |
-| AIFeedback | Stores feedback about an AI output. |
-
-### AI Design Rules
-
-- AI outputs are recommendations.
-- Human approval remains required for controlled decisions.
-- Personal information should be removed before external AI processing where possible.
-- AI outputs should be logged.
-- Model and prompt versions should be recorded where available.
-- AI functions should have fallback behaviour where appropriate.
-- Low-confidence outputs should be clearly indicated.
-
-
-## 2.2 AI Functions and Sustainability
-
-### Main Services
-
-| Service | Responsibility |
-|---|---|
-| ClassificationService | Performs AI-assisted asset classification. |
-| MatchingService | Matches requests with available assets. |
-| RecommendationService | Generates sustainability recommendations. |
-| AssistantService | Handles natural-language questions. |
-| AIReportService | Generates AI-assisted reports. |
-| DuplicateDetector | Detects possible duplicate listings. |
-| MaintenancePredictor | Identifies possible maintenance needs. |
-| OverrideService | Records human overrides of AI outputs. |
-| FeedbackService | Stores user feedback about AI outputs. |
-| SustainabilityService | Calculates sustainability figures. |
-
-### Sustainability Data Classes
-
-| Class | Responsibility |
-|---|---|
-| ReuseEvent | Records reuse activity. |
-| EmissionFactor | Stores carbon-emission factors and their sources. |
-| Figures | Represents calculated sustainability figures and assumptions. |
-
+---
 
 # 3. User Interface Mockups
 
-## 3.1 AI Match Review
+The wireframes below show the main screens in the asset, marketplace, and request modules.
 
-The AI Match Review interface contains:
+They are simple layouts showing the information and buttons needed by users.
 
-- Ranked asset matches
-- Compatibility score
-- Match explanation
-- Confidence information
-- Low-confidence warning
-- Accept match option
-- Choose another asset option
-- Feedback control
+## 3.1 Register Asset – UC-01
 
+```text
++----------------------------------------------------------------------+
+| Circular Campus          [Marketplace] [My Assets] [Requests]        |
++----------------------------------------------------------------------+
+| Register New Asset                                                   |
+|                                                                      |
+| Name *           [__________________________]                        |
+| Tag number *     [______________]                                    |
+| Description      [____________________________________]              |
+| Category *       [Select category v]                                 |
+|                                                                      |
+| AI suggestion: Laboratory chairs                                     |
+| Confidence: 82%                       [Accept] [Change]              |
+|                                                                      |
+| Quantity *       [1]                                                 |
+| Estimated value  [0.00] AED                                          |
+| Department *     [Computer Science v]                                |
+| Location *       [__________________________]                        |
+| Purchase date    [yyyy-mm-dd]                                        |
+|                                                                      |
+| Condition *      ( ) Good  ( ) Fair  ( ) Needs repair                |
+| Availability *   ( ) In use  ( ) Surplus                             |
+|                                                                      |
+| Photos           [Choose files]                                      |
+| Documents        [Choose files]                                      |
+|                                                                      |
+| * Required               [Save as Draft] [Register]                  |
++----------------------------------------------------------------------+
+```
 
-## 3.2 Sustainability Recommendation
+### Screen Description
 
-The Sustainability Recommendation interface contains:
+The Register Asset screen allows Asset Custodians and Department Representatives to create asset records.
 
-- Recommended action
-- Confidence
-- Explanation
-- Expected saving where available
-- Accept option
-- Change option
-- Reject option
-- Override reason
+The form includes the asset's name, tag number, category, quantity, department, location, condition, purchase date, estimated value, and attachments.
 
-The AI recommendation does not automatically approve the action.
+The system validates the information before saving.
 
+An optional AI category suggestion may be accepted or changed by the user.
 
-## 3.3 Assistant Interface
+---
 
-The Assistant interface contains:
+## 3.2 Marketplace and Search – UC-03, UC-04, UC-06, UC-07, UC-10
 
-- Natural-language question input
-- AI answer
-- Relevant asset or system information where permitted
-- A message when information is unavailable
-- Feedback controls
+```text
++----------------------------------------------------------------------+
+| Marketplace                                                          |
++----------------------------------------------------------------------+
+| Search: [laboratory seating________________] [Search]                |
+|                                                                      |
+| Filters                 Sort by: [Publication Date v]                |
+|                                                                      |
+| Category    [v]          -------------------------------------       |
+| Condition   [v]          Lab Bench Stool - Quantity: 20             |
+| Department  [v]          Computer Science - Good                    |
+| Location    [v]          AED 150 each                                |
+| Quantity    [_]-[_]      [View] [Reserve] [Watch]                    |
+|                                                                      |
+| Value AED   [_]-[_]      -------------------------------------       |
+| Age         [_]-[_]      Office Chair - Quantity: 6                 |
+| Status      [v]          Business - Fair                             |
+|                          AED 90 each                                 |
+| [Apply Filters]          [View] [Reserve] [Watch]                    |
+| [Save Search]                                                        |
+|                                                                      |
+|                         Page 1 of 3 [Previous] [Next]               |
++----------------------------------------------------------------------+
+| No results: "No matching resources found"                            |
++----------------------------------------------------------------------+
+```
 
+### Screen Description
 
-## 3.4 AI Report Review
+The marketplace screen allows authorized users to search published assets.
 
-The AI Report Review interface contains:
+Users can filter results by category, condition, department, location, quantity, value, age, and status.
 
-- Report title
-- Reporting period
-- AI-generated draft
-- Generated summary
-- Figure-check warnings
-- Edit option
-- Regenerate option
-- Mark as reviewed option
+Requesters can view asset details, reserve available assets, watch assets, and save searches.
 
+Authorized asset owners can publish or withdraw listings through the asset and listing details pages.
 
-## 3.5 Sustainability Dashboard
+---
 
-The Sustainability Dashboard displays available sustainability figures including:
+## 3.3 Create Request – UC-05
 
-- Assets reused
-- Avoided purchases
-- Waste diversion
-- Reuse rate
-- Repair rate
-- Estimated financial savings
-- Estimated carbon reduction
-- Asset-life extension
-- Assumptions and data-source information
+```text
++----------------------------------------------------------------------+
+| New Resource Request                                                 |
++----------------------------------------------------------------------+
+|                                                                      |
+| Category *          [Furniture v]                                    |
+| Purpose *           [____________________________]                   |
+| Specifications      [____________________________]                   |
+| Quantity *          [10]                                             |
+| Preferred condition [Good v]                                         |
+|                                                                      |
+| Urgency *           ( ) Low  ( ) Medium  ( ) High                    |
+| Location *          [____________________]                           |
+| Required date *     [yyyy-mm-dd]                                     |
+|                                                                      |
+| [Cancel]                                  [Submit Request]            |
++----------------------------------------------------------------------+
+| Request R-0042 created                                               |
+|                                                                      |
+| Suggested assets:                                                    |
+| 1. Lab Bench Stool - Match 91%                 [View]                |
++----------------------------------------------------------------------+
+```
 
+### Screen Description
 
-## 3.6 Duplicate Warning and Maintenance Forecast
+The Create Request screen allows Requesters to submit information about the resources they need.
 
-The Duplicate Warning interface contains:
+The system validates the form and creates a new request.
 
-- New listing information
-- Possible existing duplicate
-- Similarity information
-- Cancel option
-- Continue option
+After submission, matching assets may be suggested by the AI module.
 
-The Maintenance Forecast interface contains:
+---
 
-- Asset information
-- Maintenance risk
-- Reason
-- Not enough data indicator where required
-- Schedule inspection option
+## 3.4 My Requests and Reservations – UC-08, UC-09
 
+```text
++----------------------------------------------------------------------+
+| My Requests                                                          |
++----------------------------------------------------------------------+
+|                                                                      |
+| ID      Asset / Need       Status                 Reserved Until     |
+| -------------------------------------------------------------------- |
+| R-0042  Lab Seating x10    Matched / Reserved     2026-11-05         |
+| R-0039  Projector x1       Approved               -                  |
+| R-0031  Monitors x20       Submitted              -                  |
+|                                                                      |
+| [View Details]     [Edit]     [Cancel Request]                        |
+|                                                                      |
+| Cancellation blocked after transfer approval:                        |
+| "Ask an administrator to cancel this request."                       |
++----------------------------------------------------------------------+
+```
+
+### Screen Description
+
+The My Requests screen allows Requesters to check the progress of their requests.
+
+It displays request status, reservation expiry date, and available actions.
+
+The user can edit or cancel a request only when permitted by the workflow.
+
+---
 
 # 4. Traceability
 
+The traceability table connects the Phase 4 and 5 design elements to the Phase 3 use cases and functional requirements.
+
 | Design Element | Use Case | Related Requirements |
 |---|---|---|
-| Sequence 1.1 | UC-26 Classify Asset | FR-AI-01 to FR-AI-15, FR-AI-X-01 to FR-AI-X-02 |
-| Sequence 1.2 | UC-27 AI Match | FR-AI-16 to FR-AI-35 |
-| Sequence 1.3 | UC-28 Sustainability Recommendation | FR-AI-36 to FR-AI-49, FR-SUS-27 to FR-SUS-31 |
-| Sequence 1.4 | UC-29 Assistant | FR-AI-50 to FR-AI-59 |
-| Sequence 1.5 | UC-30 AI Report | FR-AI-60 to FR-AI-70 |
-| Sequence 1.6 | UC-31 Sustainability Dashboard | FR-SUS-01 to FR-SUS-31 |
-| Sequence 1.7 | UC-32 AI Override | FR-AI-X-03 to FR-AI-X-04, BR-12 |
-| Sequence 1.8 | UC-33 Duplicate Detection | No dedicated FR in Phase 3 – confirm with group |
-| Sequence 1.9 | UC-34 Maintenance Prediction | No dedicated FR in Phase 3 – confirm with group |
-| Sequence 1.10 | UC-35 AI Feedback | No dedicated FR in Phase 3 – confirm with group |
-| AI Module | All AI use cases | FR-AI-X-05 to FR-AI-X-17 |
-| Sustainability Module | UC-28 and UC-31 | FR-SUS-01 to FR-SUS-31 |
+| Sequence 1.1, AssetService | UC-01 Register Asset | FR-AST-01 to 08, FR-AI |
+| Sequence 1.2, AssetService | UC-02 Edit Asset | FR-AST-09, FR-HST, FR-AUD |
+| Sequence 1.3, MarketplaceService | UC-03 Publish Surplus Asset | FR-MKT-01, FR-MKT-02 |
+| Sequence 1.4, MarketplaceService | UC-04 Withdraw Listing | FR-MKT-03, FR-NTF |
+| Sequence 1.5, RequestService | UC-05 Submit Request | FR-REQ-01 to 06 |
+| Sequence 1.6, SearchService | UC-06 Search and Filter Assets | FR-SRC-01 to 05 |
+| Sequence 1.7, ReservationService | UC-07 Reserve Asset | FR-RSV-01 to 05, BR-04 |
+| Sequence 1.8, RequestService | UC-08 Track Request | FR-REQ-09 |
+| Sequence 1.9, RequestService | UC-09 Cancel Request | FR-REQ-08, FR-RSV |
+| Sequence 1.10, SearchService | UC-10 Save Asset to Watchlist | FR-SRC-06, FR-SRC-07 |
+| Sequence 1.11, ReservationService | Automatic Reservation Expiry | FR-RSV-05, BR-04 |
+| AssetService | Asset Deactivation | FR-AST-10 |
+| RequestService | Request Editing | FR-REQ-07 |
+| MarketplaceService | Automatic Listing Expiry | FR-MKT-04 |
+
+## 4.1 Design Consistency
+
+The sequence diagrams show the interactions between users, services, databases, and supporting modules.
+
+The class diagram identifies the main entities and services used in the system.
+
+The UI mockups show how users access these functions.
+
+The DFDs are handled separately by another team member and should be checked against these designs when the full group document is assembled.
