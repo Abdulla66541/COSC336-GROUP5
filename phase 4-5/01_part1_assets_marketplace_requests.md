@@ -837,17 +837,3 @@ The DFDs are handled separately by another team member and should be checked aga
 
 ---
 
-# 5. Check Before You Commit
-
-- [ ] All ten use cases have sequence diagrams.
-- [ ] The sequence diagrams are arranged from UC-01 to UC-10.
-- [ ] The sequence diagrams use consistent service names.
-- [ ] The class diagram includes the required main classes.
-- [ ] The UI mockups cover the main functions.
-- [ ] Every functional requirement group is represented.
-- [ ] Reservation expiry follows BR-04.
-- [ ] AI only provides suggestions and does not make final decisions.
-- [ ] The diagrams use simple, readable shapes.
-- [ ] All Mermaid diagrams render correctly in GitHub.
-- [ ] My work is consistent with the team's DFDs and shared ER diagram.
-- [ ] I committed my work in small steps using my own GitHub account.
