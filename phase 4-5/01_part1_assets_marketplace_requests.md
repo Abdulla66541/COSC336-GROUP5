@@ -8,7 +8,6 @@ Shared diagrams (architecture, the one Level 0 DFD, ER diagram) are in 00_archit
 
 ## 1. Sequence Diagrams
 
-Symbols follow the lecture: solid arrow = message that needs an answer, dashed arrow = reply, alt box = a choice between cases, thin box on a line = activation (the object is working).
 
 ### 1.1 UC-01 Register Asset
 
