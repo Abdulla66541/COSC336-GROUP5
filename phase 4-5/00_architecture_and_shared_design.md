@@ -3,8 +3,9 @@
 **Project:** Intelligent, AI-Powered Circular Campus Resource Exchange and Asset Life Cycle Management System
 **Course:** COSC 336, Khalifa University, Fall 2026 | **Group:** 5 | **Lab instructor:** Eng. Dina Atia
 
-This file holds what all four of us share: the architecture, the Level 0 DFD, the ER diagram and the data rules. Each member has their own file with sequence diagrams, a class diagram and UI mockups.
+This file holds what all four of us share: the architecture, the context diagram, the Level 0 DFD, the ER diagram and the data rules. Each member has their own file with sequence diagrams, a class diagram and UI mockups.
 
+Most diagrams are written in Mermaid, so GitHub draws them when you open the file. The context diagram and the Level 0 DFD are pictures (`00_context_diagram.png` and `00_level0_dfd.png`) that must be in the same folder. The requirement, rule and use case IDs come from our Phase 3 document.
 
 | File | Owner | Use cases covered |
 |---|---|---|
@@ -181,9 +182,44 @@ circular-campus/
 
 ---
 
-# 3. Data Flow Diagram, Level 0
+# 3. Context Diagram
 
-## 3.1 DFD Rules Used
+The context diagram shows the whole system as one process and everything outside it. It has no data stores. Every arrow has its own name.
+
+![Context Diagram](00_context_diagram.png)
+
+| External entity | Type | Sends to the system | Receives from the system |
+|---|---|---|---|
+| Administrator (AD) | Person | Approval decisions | Approval requests and reports |
+| Department Representative (DR) | Person | Asset and request data | Request status and reports |
+| Asset Custodian (AC) | Person | Asset records | Asset history |
+| Requester (RQ) | Person | Search and request details | Search results |
+| Procurement Officer (PO) | Person | Report request | Purchase reports |
+| Finance Officer (FO) | Person | Disposal approval | Cost reports |
+| Maintenance Staff (MS) | Person | Repair records | Maintenance tickets |
+| Sustainability Officer (SO) | Person | Recommendation review | Sustainability dashboard |
+| Notification Service | External system | Delivery status | Notification messages |
+| AI Service | External system | AI result | AI request |
+| System Administrator (SA) | Person | Role settings | Audit logs |
+
+---|---|---|---|
+| Department Representative (DR) | Person | Asset, listing and request data | Request status and department reports |
+| Asset Custodian (AC) | Person | Asset records and receipt confirmations | Asset history and inspection notices |
+| Requester (RQ) | Person | Search queries and request details | Search results and reservation status |
+| Administrator (AD) | Person | Approval decisions and account data | Approval requests, reports and audit logs |
+| Procurement Officer (PO) | Person | Report requests | Reuse options and purchase reports |
+| System Administrator (SA) | Person | Role settings and model settings | Audit logs and system status |
+| Finance Officer (FO) | Person | Disposal approvals | Cost and savings reports |
+| Maintenance Staff (MS) | Person | Inspection and repair records | Maintenance tickets |
+| Sustainability Officer (SO) | Person | Recommendation reviews | Sustainability dashboard |
+| AI Service | External system | AI results with confidence | AI requests without personal data |
+| Notification Service | External system | Delivery status | Notification messages |
+
+---
+
+# 4. Data Flow Diagram, Level 0
+
+## 4.1 DFD Rules Used
 
 These come from the lecture slides:
 
@@ -194,16 +230,15 @@ These come from the lecture slides:
 - No data flow goes between two external entities.
 - Every object has a unique name.
 
-Drawing symbols used in the Mermaid diagrams: **rounded box = process**, **box with side bars = data store**, **plain box = external entity**.
+Drawing symbols in the Level 0 picture: a rounded box with a number on top is a process, a black number box with a name beside it is a data store, and a plain box is an external entity.
 
-## 3.2 Level 0 Diagram
+## 4.2 Level 0 Diagram
 
-To keep the diagram easy to read, flows that only move between two processes go through the data stores. For example, Process 4.0 saves a transfer in D7, and Process 8.0 reads it from D7. Roles of the same kind are grouped: "Department Staff" means DR and AC, and "Procurement and Sustainability Officers" means PO and SO.
+The picture follows the lecture notation. To keep it readable, roles of the same kind are grouped in two boxes (the context diagram above shows each role on its own): "Department Staff" means DR and AC, and "Procurement and Sustainability Officers" means PO and SO. The picture is large, so click it on GitHub to zoom in.
 
-<img width="3512" height="1834" alt="00_level0_dfd" src="https://github.com/user-attachments/assets/08f1cccc-248b-425c-b758-a592901779ea" />
+![Level 0 DFD](00_level0_dfd.png)
 
-
-## 3.3 Process List
+## 4.3 Process List
 
 | No. | Process | Main inputs | Main outputs | Data stores | Design part |
 |---|---|---|---|---|---|
@@ -220,7 +255,7 @@ To keep the diagram easy to read, flows that only move between two processes go 
 
 ---
 
-# 4. Entity Relationship Diagram
+# 5. Entity Relationship Diagram
 
 The ER diagram is the shared database design. Each member uses the tables that belong to their part (see the table after the diagram).
 
@@ -236,7 +271,6 @@ erDiagram
     ASSET ||--o{ LISTING : "is published as"
     ASSET ||--o{ RESERVATION : "is reserved in"
     REQUEST ||--o{ RESERVATION : "creates"
-    USER ||--o{ ROLE_PERMISSION : "is limited by"
     USER ||--o{ WATCHLIST_ITEM : "follows"
     ASSET ||--o{ WATCHLIST_ITEM : "is followed in"
     REQUEST ||--o{ APPROVAL : "needs"
@@ -476,7 +510,7 @@ erDiagram
     }
 ```
 
-## 4.1 Tables by Design Part
+## 5.1 Tables by Design Part
 
 | Part | Tables | Data stores |
 |---|---|---|
@@ -485,7 +519,7 @@ erDiagram
 | Part 3 | DEPARTMENT, USER, REPORT, NOTIFICATION, AUDIT_LOG | D1, D12, D13, D14 |
 | Part 4 | AI_OUTPUT, AI_OVERRIDE, AI_FEEDBACK, REUSE_EVENT, EMISSION_FACTOR | D10, D11 |
 
-## 4.2 Main Data Rules
+## 5.2 Main Data Rules
 
 | Rule | Table and column | Source |
 |---|---|---|
@@ -504,7 +538,7 @@ erDiagram
 
 ---
 
-# 5. State Models Used by the Design
+# 6. State Models Used by the Design
 
 The allowed states are the ones from Phase 3, Section 6.2. The classes and sequence diagrams in the member files use the same names.
 
