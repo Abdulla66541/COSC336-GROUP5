@@ -1,637 +1,764 @@
-1. Sequence Diagrams
-1.1 UC-11 Approve or Reject Transfer
+# Phase 4 & 5 - Part 1: Assets, Marketplace and Requests
+
+Owner: Mohammed Al Ali Use cases: UC-01 to UC-10 (Register asset, Edit asset, Publish surplus asset, Withdraw listing, Submit request, Search and filter assets, Reserve asset, Track request, Cancel request, Save asset to watchlist) Requirement groups: FR-AST, FR-MKT, FR-REQ, FR-SRC, FR-RSV Data stores: D2 Assets, D4 Listings, D5 Requests and Reservations (watchlist items are kept in D5). D3 Asset History is written to, but it belongs to Part 2. Tables: CATEGORY, ASSET, ASSET_MEDIA, LISTING, REQUEST, RESERVATION, WATCHLIST_ITEM
+
+Shared diagrams (architecture, the one Level 0 DFD, ER diagram) are in 00_architecture_and_shared_design.md.
+
+---
+
+## 1. Sequence Diagrams
+
+Symbols follow the lecture: solid arrow = message that needs an answer, dashed arrow = reply, alt box = a choice between cases, thin box on a line = activation (the object is working).
+
+### 1.1 UC-01 Register Asset
+
+```mermaid
 sequenceDiagram
     autonumber
-    actor AD as Administrator
+    actor AC as Asset Custodian
     participant UI as Web Page
-    participant ApprovalController
+    participant AssetController
     participant Security
-    participant ApprovalService
-    participant TransferService
+    participant AssetService
+    participant AIFacade
+    participant AIService as AI Service
     participant DB as Database
     participant Audit as History and Audit
-    participant Noti as Notification Module
 
-    AD->>UI: Open approval queue
-    UI->>ApprovalController: GET /approvals?status=pending
-    ApprovalController->>Security: checkPermission(AD, "approve")
-    Security-->>ApprovalController: allowed
-    ApprovalController->>ApprovalService: getPending()
-    ApprovalService->>DB: read pending approvals
-    DB-->>ApprovalService: list
-    ApprovalService-->>UI: approval list
-    UI-->>AD: Show requests, assets and history
-    AD->>UI: Select a request and click "Approve" or "Reject"
-    UI->>ApprovalController: POST /approvals/{id}/decision
-    activate ApprovalController
-    ApprovalController->>ApprovalService: decide(approvalId, decision, reason, userId)
-    activate ApprovalService
-    ApprovalService->>DB: read approval, request and asset
-    DB-->>ApprovalService: current states
-    alt approver is also the requester (BR-07)
-        ApprovalService-->>ApprovalController: blocked
-        ApprovalController-->>UI: message
-        UI-->>AD: Show "You cannot approve your own request"
-    else request or asset state has changed
-        ApprovalService-->>ApprovalController: refused with current state
-        ApprovalController-->>UI: message
-        UI-->>AD: Show current state
-    else department representative release is missing (FR-APR-02)
-        ApprovalService-->>ApprovalController: refused, release approval needed
-        ApprovalController-->>UI: message
-        UI-->>AD: Show "Waiting for department approval"
-    else decision is "Approve"
-        ApprovalService->>DB: save decision, set transfer "Approved", asset "In Transfer"
-        ApprovalService->>TransferService: createTransfer(requestId, assetId)
-        TransferService->>DB: save transfer record
-        ApprovalService->>Audit: record approver, decision, time
-        ApprovalService->>Noti: notify requester and custodian
-    else decision is "Reject"
-        ApprovalService->>ApprovalService: check reason has 10 characters or more
-        ApprovalService->>DB: save rejection, release reservation, asset "Available / Published"
-        ApprovalService->>Audit: record decision and reason
-        ApprovalService->>Noti: notify requester
+    AC->>UI: Click "Register new asset"
+    UI-->>AC: Show registration form
+    AC->>UI: Enter details and photos, click Submit
+    UI->>AssetController: POST /assets
+    activate AssetController
+    AssetController->>Security: checkPermission(user, "register asset")
+    Security-->>AssetController: allowed
+    AssetController->>AssetService: registerAsset(data)
+    activate AssetService
+    AssetService->>AssetService: validate fields, quantity, value, date, files
+    alt a field is invalid
+        AssetService-->>AssetController: list of invalid fields
+        AssetController-->>UI: errors
+        UI-->>AC: Highlight the fields
+    else all fields are valid
+        AssetService->>DB: find asset with same tag number
+        DB-->>AssetService: result
+        alt tag number already exists
+            AssetService-->>UI: existing asset
+            UI-->>AC: Show existing asset, cancel or correct
+        else tag number is new
+            AssetService->>AIFacade: suggestCategory(title, description, specs, image)
+            activate AIFacade
+            AIFacade->>AIService: classify (no personal data)
+            alt answer within 15 seconds
+                AIService-->>AIFacade: category, tags, confidence
+                AIFacade-->>AssetService: suggestion and confidence
+            else no answer in 15 seconds
+                AIFacade-->>AssetService: no suggestion (fallback)
+            end
+            deactivate AIFacade
+            AssetService-->>UI: suggestion (if any)
+            UI-->>AC: Show category with confidence
+            AC->>UI: Accept or change the category
+            UI->>AssetService: confirmed category
+            AssetService->>DB: save asset with status "Registered" and media
+            DB-->>AssetService: asset ID
+            AssetService->>Audit: record history and audit entries
+            AssetService-->>AssetController: asset ID
+            deactivate AssetService
+            AssetController-->>UI: success
+            deactivate AssetController
+            UI-->>AC: Confirm and offer to publish
+        end
     end
-    ApprovalService-->>ApprovalController: result
-    deactivate ApprovalService
-    ApprovalController-->>UI: result
-    deactivate ApprovalController
-    UI-->>AD: Show result
-Overdue approvals (runs every hour)
+```
+
+### 1.2 UC-02 Edit Asset
+
+```mermaid
 sequenceDiagram
     autonumber
-    participant Timer as Hourly Timer
-    participant ApprovalService
-    participant DB as Database
-    participant Noti as Notification Module
-
-    Timer->>ApprovalService: markOverdueApprovals()
-    ApprovalService->>DB: find pending approvals older than 48 hours
-    DB-->>ApprovalService: list
-    loop for each approval in the list
-        ApprovalService->>DB: set flag "overdue"
-        ApprovalService->>Noti: notify Administrator
-    end
-1.2 UC-12 Confirm Receipt
-sequenceDiagram
-    autonumber
-    actor U as DR or AC (receiving department)
+    actor U as AC or DR
     participant UI as Web Page
-    participant TransferController
-    participant Security
-    participant TransferService
+    participant AssetController
     participant AssetService
     participant DB as Database
     participant Audit as History and Audit
-    participant Noti as Notification Module
 
-    U->>UI: Open the approved transfer, click "Confirm receipt"
-    UI->>TransferController: POST /transfers/{id}/receipt
-    activate TransferController
-    TransferController->>Security: checkPermission(user, "confirm receipt")
-    Security-->>TransferController: allowed (receiving department)
-    TransferController->>TransferService: confirmReceipt(transferId, note, photo)
-    activate TransferService
-    TransferService->>DB: read transfer
-    DB-->>TransferService: transfer with status
-    alt transfer was cancelled
-        TransferService-->>TransferController: ended, show status
-        TransferController-->>UI: message
-        UI-->>U: Show "Transfer was cancelled"
-    else user reports a damaged or wrong asset
-        TransferService->>DB: save discrepancy note, keep transfer open
-        TransferService->>Noti: notify Administrator
-        TransferService-->>TransferController: problem recorded
-        TransferController-->>UI: message
-        UI-->>U: Show "Problem reported"
-    else receipt is confirmed
-        TransferService->>DB: set transfer "Received"
-        TransferService->>AssetService: changeOwner(assetId, newDept, newCustodian, newLocation)
-        AssetService->>DB: update owner, save previous owner and location
-        DB-->>AssetService: saved
-        AssetService-->>TransferService: done
-        TransferService->>DB: set transfer "Completed" and request "Fulfilled"
-        TransferService->>Audit: record history and audit entries
-        TransferService->>Noti: notify previous owner
-        TransferService-->>TransferController: completed
-        deactivate TransferService
-        TransferController-->>UI: success
-        deactivate TransferController
-        UI-->>U: Show "Ownership updated"
+    U->>UI: Open asset and click "Edit"
+    UI->>AssetController: GET /assets/{id}
+    AssetController->>AssetService: getAsset(id)
+    AssetService->>DB: read asset
+    DB-->>AssetService: current values
+    AssetService-->>UI: asset data
+    UI-->>U: Show edit form
+    U->>UI: Change details and click "Save"
+    UI->>AssetController: PUT /assets/{id}
+    activate AssetController
+    AssetController->>AssetService: updateAsset(id, data, version)
+    activate AssetService
+    AssetService->>AssetService: check permission and validate fields
+    alt a field is invalid
+        AssetService-->>AssetController: list of invalid fields
+        AssetController-->>UI: errors
+        UI-->>U: Highlight the fields
+    else fields are valid
+        AssetService->>DB: compare version number
+        DB-->>AssetService: current version
+        alt asset was changed by someone else
+            AssetService-->>AssetController: conflict
+            AssetController-->>UI: message
+            UI-->>U: Show "Please reload the asset"
+        else no conflict
+            AssetService->>DB: save new values
+            AssetService->>Audit: record old and new values
+            AssetService-->>AssetController: done
+            deactivate AssetService
+            AssetController-->>UI: success
+            deactivate AssetController
+            UI-->>U: Show "Asset updated"
+        end
     end
-If nobody confirms in 14 days, a daily timer sends a reminder and flags the transfer (BR-08, UC-12 alternative flow 3a).
-1.3 UC-13 Report Defect
+```
+
+### 1.3 UC-03 Publish Surplus Asset
+
+```mermaid
 sequenceDiagram
     autonumber
-    actor U as AC, DR, RQ, MS or AD
+    actor U as AC or DR
     participant UI as Web Page
-    participant MaintenanceController
-    participant MaintenanceService
+    participant MarketplaceController
+    participant MarketplaceService
+    participant AIFacade
+    participant DB as Database
+    participant Audit as History and Audit
+
+    U->>UI: Click "Publish as surplus"
+    UI->>MarketplaceController: POST /listings/prepare
+    activate MarketplaceController
+    MarketplaceController->>MarketplaceService: prepare(assetId)
+    activate MarketplaceService
+    MarketplaceService->>DB: read asset status
+    DB-->>MarketplaceService: status
+    alt asset cannot be published (for example in transfer)
+        MarketplaceService-->>MarketplaceController: refused
+        MarketplaceController-->>UI: message
+        UI-->>U: Show the reason
+    else asset can be published
+        MarketplaceService->>AIFacade: suggestTitleAndKeywords(asset)
+        AIFacade-->>MarketplaceService: suggestion or fallback
+        MarketplaceService-->>UI: publication form
+        U->>UI: Review and confirm
+        UI->>MarketplaceController: POST /listings
+        MarketplaceController->>MarketplaceService: publish(assetId, data)
+        MarketplaceService->>DB: look for similar active listings
+        DB-->>MarketplaceService: result
+        alt possible duplicate
+            MarketplaceService-->>UI: warning with the existing listing
+            UI-->>U: Ask to cancel or continue
+        else no duplicate
+            MarketplaceService->>DB: save listing "Active" (expires in 30 days)
+            MarketplaceService->>Audit: record history entry
+            MarketplaceService-->>MarketplaceController: listing ID
+            deactivate MarketplaceService
+            MarketplaceController-->>UI: success
+            deactivate MarketplaceController
+            UI-->>U: Show "Listing published"
+        end
+    end
+```
+
+### 1.4 UC-04 Withdraw Listing
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as AC or DR
+    participant UI as Web Page
+    participant MarketplaceController
+    participant MarketplaceService
     participant DB as Database
     participant Audit as History and Audit
     participant Noti as Notification Module
 
-    U->>UI: Click "Report defect" on an asset
-    UI-->>U: Show defect form
-    U->>UI: Enter description, condition, optional photo
-    UI->>MaintenanceController: POST /tickets
-    activate MaintenanceController
-    MaintenanceController->>MaintenanceService: reportDefect(assetId, description, condition)
-    activate MaintenanceService
-    MaintenanceService->>DB: check asset ID
-    DB-->>MaintenanceService: asset or not found
-    alt asset ID is not valid
-        MaintenanceService-->>MaintenanceController: error
-        MaintenanceController-->>UI: error
-        UI-->>U: Show "Invalid asset"
-    else asset is valid
-        MaintenanceService->>DB: save ticket "Reported", set asset "In Maintenance"
-        alt photo upload fails
-            MaintenanceService-->>UI: report saved, photo can be added later
-        end
-        MaintenanceService->>Audit: record defect event
-        MaintenanceService->>Noti: notify maintenance team
-        MaintenanceService-->>MaintenanceController: ticket ID
-        deactivate MaintenanceService
-        MaintenanceController-->>UI: success
-        deactivate MaintenanceController
-        UI-->>U: Show ticket ID
+    U->>UI: Click "Withdraw listing"
+    UI->>MarketplaceController: POST /listings/{id}/withdraw
+    activate MarketplaceController
+    MarketplaceController->>MarketplaceService: withdraw(listingId)
+    activate MarketplaceService
+    MarketplaceService->>DB: read listing and related transfer
+    DB-->>MarketplaceService: status
+    alt an approved transfer exists
+        MarketplaceService-->>MarketplaceController: blocked
+        MarketplaceController-->>UI: message
+        UI-->>U: Show "A transfer is already approved"
+    else withdrawal is allowed
+        MarketplaceService-->>UI: ask for a reason
+        U->>UI: Enter reason and confirm
+        UI->>MarketplaceService: confirm withdrawal
+        MarketplaceService->>DB: set listing "Withdrawn"
+        MarketplaceService->>Audit: record history entry
+        MarketplaceService->>Noti: notify requesters with open reservations
+        MarketplaceService-->>MarketplaceController: done
+        deactivate MarketplaceService
+        MarketplaceController-->>UI: success
+        deactivate MarketplaceController
+        UI-->>U: Show "Listing withdrawn"
     end
-1.4 UC-24 Schedule Inspection
-sequenceDiagram
-    autonumber
-    actor MS as Maintenance Staff
-    participant UI as Web Page
-    participant MaintenanceController
-    participant MaintenanceService
-    participant DB as Database
-    participant Noti as Notification Module
+```
 
-    MS->>UI: Open ticket, click "Schedule inspection"
-    UI-->>MS: Show last inspection date
-    MS->>UI: Pick staff member, date and time
-    UI->>MaintenanceController: POST /tickets/{id}/inspection
-    MaintenanceController->>MaintenanceService: scheduleInspection(ticketId, staff, dateTime)
-    MaintenanceService->>DB: read asset status
-    DB-->>MaintenanceService: status
-    alt asset is in transfer
-        MaintenanceService-->>UI: warning, suggest new date
-        UI-->>MS: Show warning
-    else asset is free
-        MaintenanceService->>DB: save inspection schedule
-        MaintenanceService->>Noti: notify custodian and remind on the day
-        MaintenanceService-->>UI: saved
-        UI-->>MS: Show confirmation
-    end
-1.5 UC-14 Record Repair
+### 1.5 UC-05 Submit Request
+
+```mermaid
 sequenceDiagram
     autonumber
-    actor MS as Maintenance Staff
+    actor RQ as Requester
     participant UI as Web Page
-    participant MaintenanceController
-    participant MaintenanceService
+    participant RequestController
+    participant RequestService
+    participant AIFacade
     participant DB as Database
     participant Audit as History and Audit
     participant Noti as Notification Module
 
-    MS->>UI: Open ticket, click "Record repair"
-    UI-->>MS: Show repair form
-    MS->>UI: Enter work done, parts, cost in AED, result
-    UI->>MaintenanceController: POST /tickets/{id}/repairs
-    activate MaintenanceController
-    MaintenanceController->>MaintenanceService: recordRepair(ticketId, details)
-    activate MaintenanceService
-    MaintenanceService->>DB: read ticket
-    DB-->>MaintenanceService: ticket status and assignee
-    alt ticket is assigned to someone else
-        MaintenanceService-->>UI: blocked, show current assignee
-    else ticket is not "Repair Approved" or "In Repair"
-        MaintenanceService-->>UI: blocked, repair needs Administrator approval
-    else cost is negative
-        MaintenanceService-->>UI: highlight cost field
-    else details are valid
-        MaintenanceService->>DB: save repair record
-        alt result is repaired
-            MaintenanceService->>DB: set ticket "Completed", update asset condition
-        else result is not repairable
-            MaintenanceService->>DB: set ticket "Not Repairable"
-            MaintenanceService->>Noti: notify Administrator (see UC-25 and UC-16)
-        end
-        MaintenanceService->>Audit: record repair event
-        MaintenanceService->>Noti: notify custodian
-        MaintenanceService-->>MaintenanceController: saved
-        deactivate MaintenanceService
-        MaintenanceController-->>UI: success
-        deactivate MaintenanceController
-        UI-->>MS: Show repair in history
+    RQ->>UI: Click "Create request"
+    UI-->>RQ: Show request form
+    RQ->>UI: Enter category, purpose, quantity, urgency, location, date
+    UI->>RequestController: POST /requests
+    activate RequestController
+    RequestController->>RequestService: submitRequest(data)
+    activate RequestService
+    RequestService->>RequestService: validate (quantity 1 or more, date not in the past, urgency Low, Medium or High)
+    alt data is invalid
+        RequestService-->>RequestController: errors
+        RequestController-->>UI: errors
+        UI-->>RQ: Show invalid fields
+    else data is valid
+        RequestService->>DB: save request with status "Submitted"
+        DB-->>RequestService: request ID
+        RequestService->>Audit: record audit entry
+        RequestService->>Noti: notify department representative
+        RequestService->>AIFacade: findMatches(request)
+        AIFacade-->>RequestService: ranked matches or fallback list
+        RequestService-->>RequestController: request ID and matches
+        deactivate RequestService
+        RequestController-->>UI: success
+        deactivate RequestController
+        UI-->>RQ: Show request ID and suggested assets
     end
-1.6 UC-16 Approve Disposal (and UC-25 Approve Donation or Recycling)
-For donation or recycling the same flow is used, but only the Administrator decides and the Finance Officer step is skipped.
-sequenceDiagram
-    autonumber
-    actor AD as Administrator
-    actor FO as Finance Officer
-    participant UI as Web Page
-    participant EndOfLifeController
-    participant EndOfLifeService
-    participant ApprovalService
-    participant DB as Database
-    participant Audit as History and Audit
-    participant Noti as Notification Module
+```
 
-    AD->>UI: Open disposal request
-    UI->>EndOfLifeController: GET /end-of-life/{id}
-    EndOfLifeController->>EndOfLifeService: getRequest(id)
-    EndOfLifeService->>DB: read request, asset, assessment, repair history
-    DB-->>EndOfLifeService: data
-    EndOfLifeService-->>UI: request details
-    UI-->>AD: Show asset, reason and alternatives assessment
-    AD->>UI: Click "Approve"
-    UI->>EndOfLifeController: POST /end-of-life/{id}/approve
-    activate EndOfLifeController
-    EndOfLifeController->>EndOfLifeService: approve(id, userId)
-    activate EndOfLifeService
-    alt alternatives assessment is missing (BR-10)
-        EndOfLifeService-->>EndOfLifeController: blocked
-        EndOfLifeController-->>UI: message
-        UI-->>AD: Show "Assess alternatives first"
-    else asset is in transfer or repair
-        EndOfLifeService-->>EndOfLifeController: blocked
-        EndOfLifeController-->>UI: message
-        UI-->>AD: Show the reason
-    else request can be approved
-        EndOfLifeService->>ApprovalService: record Administrator approval
-        alt value is above AED 5,000 (BR-09)
-            EndOfLifeService->>Noti: ask Finance Officer
-            Noti-->>FO: Notification
-            FO->>UI: Open request and approve or reject
-            UI->>EndOfLifeController: POST /end-of-life/{id}/finance-decision
-            EndOfLifeController->>EndOfLifeService: financeDecision(id, decision)
-            alt Finance Officer rejects
-                EndOfLifeService->>DB: keep asset status unchanged
-                EndOfLifeService->>Audit: record rejection
-            else Finance Officer approves
-                EndOfLifeService->>DB: set asset "Disposed", remove from marketplace
-                EndOfLifeService->>Audit: record history and audit entries
-            end
-        else value is AED 5,000 or less
-            EndOfLifeService->>DB: set asset "Disposed", remove from marketplace
-            EndOfLifeService->>Audit: record history and audit entries
-        end
-        EndOfLifeService->>Noti: notify custodian and requester
-        EndOfLifeService-->>EndOfLifeController: result
-        deactivate EndOfLifeService
-        EndOfLifeController-->>UI: result
-        deactivate EndOfLifeController
-        UI-->>AD: Show result
-    end
-1.7 UC-15 View Asset History
+### 1.6 UC-06 Search and Filter Assets
+
+```mermaid
 sequenceDiagram
     autonumber
-    actor U as AC, DR, AD, FO, MS or SO
+    actor RQ as Requester
     participant UI as Web Page
-    participant HistoryController
+    participant SearchController
     participant Security
-    participant HistoryService
+    participant SearchService
+    participant DB as Database
+
+    RQ->>UI: Type keywords and choose filters
+    UI->>SearchController: GET /assets/search?q=...&filters=...
+    activate SearchController
+    SearchController->>Security: checkPermission(user, "search")
+    Security-->>SearchController: allowed and visible departments
+    SearchController->>SearchService: search(keywords, filters, sort)
+    activate SearchService
+    SearchService->>SearchService: check filters (minimum is not above maximum)
+    alt filter range is invalid
+        SearchService-->>SearchController: error message
+        SearchController-->>UI: error
+        UI-->>RQ: Show "Invalid range"
+    else filters are valid
+        SearchService->>DB: query published assets the user may see
+        DB-->>SearchService: matching assets
+        alt no assets found
+            SearchService-->>SearchController: empty list
+            SearchController-->>UI: empty list
+            UI-->>RQ: Show "No matching resources found"
+        else assets found
+            SearchService->>SearchService: sort results
+            SearchService-->>SearchController: result list
+            deactivate SearchService
+            SearchController-->>UI: result list
+            deactivate SearchController
+            UI-->>RQ: Show results
+        end
+    end
+```
+
+### 1.7 UC-07 Reserve Asset
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor RQ as Requester
+    participant UI as Web Page
+    participant ReservationController
+    participant ReservationService
     participant DB as Database
     participant Audit as History and Audit
+    participant Noti as Notification Module
 
-    U->>UI: Open asset, click "History"
-    UI->>HistoryController: GET /assets/{id}/history
-    HistoryController->>Security: checkPermission(user, "view history", asset)
-    alt user has no access to this asset
-        Security-->>HistoryController: denied
-        HistoryController->>Audit: record denied attempt (FR-AUD-01)
-        HistoryController-->>UI: access denied
-        UI-->>U: Show "No access"
-    else user has access
-        Security-->>HistoryController: allowed
-        HistoryController->>HistoryService: getHistory(assetId)
-        HistoryService->>DB: read events in time order
-        DB-->>HistoryService: events
-        HistoryService-->>HistoryController: events
-        HistoryController-->>UI: events
-        UI-->>U: Show timeline with event, date, user and record
+    RQ->>UI: Click "Reserve" on an asset
+    UI->>ReservationController: POST /reservations
+    activate ReservationController
+    ReservationController->>ReservationService: reserve(assetId, requestId, quantity)
+    activate ReservationService
+    ReservationService->>DB: read asset status and free quantity
+    DB-->>ReservationService: status and quantity
+    alt asset is not available or another active reservation exists
+        ReservationService-->>ReservationController: rejected, asset is taken
+        ReservationController-->>UI: message
+        UI-->>RQ: Show "Asset is not available"
+    else quantity is higher than free quantity
+        ReservationService-->>ReservationController: rejected, not enough quantity
+        ReservationController-->>UI: message
+        UI-->>RQ: Show "Not enough quantity"
+    else reservation is possible
+        ReservationService->>DB: save reservation (expires in 7 days) and set asset "Reserved"
+        DB-->>ReservationService: reservation ID
+        ReservationService->>Audit: record history and audit entries
+        ReservationService->>Noti: notify approver and owner
+        ReservationService-->>ReservationController: reservation ID and expiry date
+        deactivate ReservationService
+        ReservationController-->>UI: success
+        deactivate ReservationController
+        UI-->>RQ: Show reservation and expiry date
     end
-2. Class Diagram
+```
+
+### 1.8 UC-08 Track Request
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor RQ as Requester
+    participant UI as Web Page
+    participant RequestController
+    participant RequestService
+    participant DB as Database
+
+    RQ->>UI: Open "My requests"
+    UI->>RequestController: GET /requests/mine
+    RequestController->>RequestService: getMyRequests(userId)
+    RequestService->>DB: read requests of the user
+    DB-->>RequestService: list
+    alt user has no requests
+        RequestService-->>UI: empty list
+        UI-->>RQ: Show "No requests yet"
+    else requests found
+        RequestService-->>UI: request list
+        UI-->>RQ: Show requests with status
+        RQ->>UI: Select a request
+        UI->>RequestController: GET /requests/{id}
+        RequestController->>RequestService: getStatus(id)
+        RequestService->>DB: read status and history
+        DB-->>RequestService: details
+        RequestService-->>UI: status, history and next step
+        UI-->>RQ: Show progress
+    end
+```
+
+### 1.9 UC-09 Cancel Request
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor RQ as Requester
+    participant UI as Web Page
+    participant RequestController
+    participant RequestService
+    participant DB as Database
+    participant Audit as History and Audit
+    participant Noti as Notification Module
+
+    RQ->>UI: Click "Cancel request"
+    UI->>RequestController: POST /requests/{id}/cancel
+    activate RequestController
+    RequestController->>RequestService: cancelRequest(id)
+    activate RequestService
+    RequestService->>DB: read request status
+    DB-->>RequestService: status
+    alt a transfer is already approved
+        RequestService-->>RequestController: blocked
+        RequestController-->>UI: message
+        UI-->>RQ: Show "Ask an administrator to cancel"
+    else cancellation is allowed
+        RequestService-->>UI: ask for confirmation
+        RQ->>UI: Confirm
+        UI->>RequestService: confirm cancellation
+        RequestService->>DB: set request "Cancelled", release any reservation
+        RequestService->>Audit: record history entry
+        RequestService->>Noti: notify asset owner
+        RequestService-->>RequestController: done
+        deactivate RequestService
+        RequestController-->>UI: success
+        deactivate RequestController
+        UI-->>RQ: Show "Request cancelled"
+    end
+```
+
+### 1.10 UC-10 Save Asset to Watchlist
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor RQ as Requester
+    participant UI as Web Page
+    participant SearchController
+    participant SearchService
+    participant DB as Database
+
+    RQ->>UI: Click "Watch" on an asset or a search
+    UI->>SearchController: POST /watchlist
+    SearchController->>SearchService: saveToWatchlist(userId, item)
+    SearchService->>DB: check for an existing watch
+    DB-->>SearchService: result
+    alt already watched
+        SearchService-->>UI: already in the watchlist
+        UI-->>RQ: Offer to stop watching
+    else new watch
+        SearchService->>DB: save watchlist item
+        SearchService-->>UI: saved
+        UI-->>RQ: Show "Added to your watchlist"
+    end
+```
+
+### 1.11 Reservation Expiry (runs every day)
+
+This is the system action behind FR-RSV-05 and BR-04.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Timer as Daily Timer
+    participant ReservationService
+    participant DB as Database
+    participant Audit as History and Audit
+    participant Noti as Notification Module
+
+    Timer->>ReservationService: expireOldReservations()
+    activate ReservationService
+    ReservationService->>DB: find active reservations older than 7 days without approval
+    DB-->>ReservationService: list
+    loop for each reservation in the list
+        ReservationService->>DB: set reservation "Expired" and asset "Available / Published"
+        ReservationService->>Audit: record history entry
+        ReservationService->>Noti: notify requester
+    end
+    deactivate ReservationService
+```
+
+---
+
+---
+
+## 2. Class Diagram
+
+Entity classes match the ER tables. Service classes hold the rules (BR and FR). Controller classes only receive requests and call one service.
+
+```mermaid
 classDiagram
-    class Approval {
-        +int approvalId
-        +String actionType
-        +int assetId
-        +int requestId
-        +int approverId
-        +ApprovalDecision decision
-        +String reason
-        +DateTime decidedAt
-        +ApprovalStatus status
-        +isOverdue() boolean
-        +approve(userId) void
-        +reject(userId, reason) void
+    class Category {
+        +int categoryId
+        +String name
+        +String subcategory
     }
-    class Transfer {
-        +int transferId
+    class Asset {
         +int assetId
-        +int requestId
-        +int fromDeptId
-        +int toDeptId
-        +Date handoverDate
-        +String handoverLocation
-        +TransferStatus status
-        +int receivedBy
-        +DateTime receivedAt
-        +String discrepancyNote
-        +schedule(date, place) void
-        +markInTransit() void
-        +confirmReceipt(userId) void
-        +reportDiscrepancy(note) void
-        +cancel() void
-    }
-    class MaintenanceTicket {
-        +int ticketId
-        +int assetId
-        +int reportedBy
-        +int assignedTo
+        +String tagNumber
+        +String name
         +String description
-        +DateTime inspectionAt
-        +TicketStatus status
-        +scheduleInspection(staff, dateTime) void
-        +approveRepair(adminId) void
-        +complete() void
-        +verify(userId) void
-        +markNotRepairable() void
+        +int quantity
+        +String location
+        +Date purchaseDate
+        +Decimal estValueAed
+        +String condition
+        +String materialType
+        +AssetStatus status
+        +boolean active
+        +isAvailable() boolean
+        +reserve(qty) void
+        +deactivate() void
     }
-    class RepairRecord {
-        +int repairId
-        +int performedBy
-        +String action
-        +Decimal costAed
-        +Date repairDate
-        +isCostValid() boolean
+    class AssetMedia {
+        +int mediaId
+        +String kind
+        +String filePath
+        +int sizeKb
+        +isValidType() boolean
+        +isValidSize() boolean
     }
-    class EndOfLifeRequest {
-        +int eolId
-        +int assetId
-        +EolAction action
-        +String reason
-        +String alternativesAssessment
-        +String recipient
-        +EolStatus status
-        +hasAssessment() boolean
-        +needsFinanceApproval() boolean
+    class Listing {
+        +int listingId
+        +DateTime publishedAt
+        +DateTime expiresAt
+        +ListingStatus status
+        +withdraw() void
+        +expire() void
     }
-    class AssetHistoryEvent {
-        +int eventId
-        +int assetId
-        +String eventType
-        +int actorId
-        +DateTime eventTime
-        +String relatedRecord
-        +String details
+    class Request {
+        +int requestId
+        +String category
+        +String purpose
+        +String specifications
+        +int quantity
+        +String preferredCondition
+        +Urgency urgency
+        +String location
+        +Date requiredDate
+        +RequestStatus status
+        +cancel() void
+        +canEdit() boolean
     }
-    class ApprovalStatus {
+    class Reservation {
+        +int reservationId
+        +int quantity
+        +DateTime reservedAt
+        +DateTime expiresAt
+        +ReservationStatus status
+        +isExpired() boolean
+        +release() void
+    }
+    class WatchlistItem {
+        +int watchId
+        +String savedSearch
+    }
+    class AssetStatus {
         <<enumeration>>
-        Pending
-        Approved
-        Rejected
-        Overdue
+        Draft
+        Registered
+        AvailablePublished
+        Reserved
+        InTransfer
+        InMaintenance
+        Retired
+        Donated
+        Recycled
+        Disposed
     }
-    class TransferStatus {
+    class RequestStatus {
         <<enumeration>>
-        Requested
-        PendingApproval
+        Draft
+        Submitted
+        MatchedReserved
         Approved
         Rejected
         Cancelled
-        Scheduled
-        InTransit
-        Received
-        Completed
+        Expired
+        Fulfilled
     }
-    class TicketStatus {
+    class Urgency {
         <<enumeration>>
-        Reported
-        Inspected
-        RepairApproved
-        InRepair
-        Completed
-        Verified
-        NotRepairable
+        Low
+        Medium
+        High
     }
-    class EolAction {
+    class ListingStatus {
         <<enumeration>>
-        Donate
-        Recycle
-        Dispose
+        Active
+        Withdrawn
+        Expired
+    }
+    class ReservationStatus {
+        <<enumeration>>
+        Active
+        Expired
+        Released
+        Converted
     }
 
-    class ApprovalService {
-        +createApproval(action, assetId, requestId) Approval
-        +getPending() List
-        +decide(id, decision, reason, userId) Approval
-        +markOverdueApprovals() void
+    class AssetService {
+        +registerAsset(data) Asset
+        +updateAsset(id, data) Asset
+        +deactivateAsset(id) void
+        +validate(data) List
+        +findDuplicate(tagNumber) Asset
     }
-    class TransferService {
-        +createTransfer(requestId, assetId) Transfer
-        +schedule(id, date, place) Transfer
-        +confirmReceipt(id, note) Transfer
-        +sendReminders() void
+    class MarketplaceService {
+        +publish(assetId) Listing
+        +withdraw(listingId) void
+        +expireOldListings() void
     }
-    class MaintenanceService {
-        +reportDefect(assetId, description, condition) MaintenanceTicket
-        +scheduleInspection(ticketId, staff, dateTime) void
-        +recordRepair(ticketId, details) RepairRecord
-        +verifyRepair(ticketId, userId) void
+    class RequestService {
+        +submitRequest(data) Request
+        +editRequest(id, data) Request
+        +cancelRequest(id) void
+        +getStatus(id) RequestStatus
     }
-    class EndOfLifeService {
-        +createRequest(assetId, action, reason) EndOfLifeRequest
-        +approve(id, userId) void
-        +financeDecision(id, decision) void
-        +complete(id) void
+    class ReservationService {
+        +reserve(assetId, requestId, qty) Reservation
+        +release(id) void
+        +expireOldReservations() void
     }
-    class HistoryService {
-        +record(assetId, eventType, actorId, ref) AssetHistoryEvent
-        +getHistory(assetId) List
+    class SearchService {
+        +search(keywords, filters, sort) List
+        +saveToWatchlist(userId, assetOrSearch) WatchlistItem
     }
-    class ApprovalController {
-        +getPending() Response
-        +postDecision() Response
+    class AssetController {
+        +postAsset() Response
+        +putAsset() Response
+        +deleteAsset() Response
     }
-    class TransferController {
-        +postSchedule() Response
-        +postReceipt() Response
+    class MarketplaceController {
+        +postListing() Response
+        +deleteListing() Response
     }
-    class MaintenanceController {
-        +postTicket() Response
-        +postInspection() Response
-        +postRepair() Response
+    class RequestController {
+        +postRequest() Response
+        +putRequest() Response
+        +cancelRequest() Response
+        +getRequests() Response
     }
-    class EndOfLifeController {
-        +getRequest() Response
-        +postApprove() Response
-        +postFinanceDecision() Response
-    }
-    class HistoryController {
-        +getHistory() Response
+    class SearchController {
+        +getSearch() Response
+        +postWatch() Response
     }
 
-    MaintenanceTicket "1" --> "0..*" RepairRecord : contains
-    Approval --> ApprovalStatus
-    Transfer --> TransferStatus
-    MaintenanceTicket --> TicketStatus
-    EndOfLifeRequest --> EolAction
+    Category "1" --> "0..*" Asset : classifies
+    Asset "1" --> "0..*" AssetMedia : has
+    Asset "1" --> "0..*" Listing : is published as
+    Asset "1" --> "0..*" Reservation : is reserved in
+    Request "1" --> "0..*" Reservation : creates
+    Asset "1" --> "0..*" WatchlistItem : is followed in
+    Asset --> AssetStatus
+    Request --> RequestStatus
+    Request --> Urgency
+    Listing --> ListingStatus
+    Reservation --> ReservationStatus
 
-    ApprovalController ..> ApprovalService
-    TransferController ..> TransferService
-    MaintenanceController ..> MaintenanceService
-    EndOfLifeController ..> EndOfLifeService
-    HistoryController ..> HistoryService
-    ApprovalService ..> Approval
-    ApprovalService ..> TransferService
-    TransferService ..> Transfer
-    TransferService ..> HistoryService
-    MaintenanceService ..> MaintenanceTicket
-    MaintenanceService ..> RepairRecord
-    EndOfLifeService ..> EndOfLifeRequest
-    EndOfLifeService ..> ApprovalService
-    HistoryService ..> AssetHistoryEvent
+    AssetController ..> AssetService
+    MarketplaceController ..> MarketplaceService
+    RequestController ..> RequestService
+    RequestController ..> ReservationService
+    SearchController ..> SearchService
+    AssetService ..> Asset
+    MarketplaceService ..> Listing
+    RequestService ..> Request
+    ReservationService ..> Reservation
+    SearchService ..> Asset
+    SearchService ..> WatchlistItem
+```
 
-
-Class
-Role
-Rule it enforces
-ApprovalService
-Creates and decides approvals, finds overdue ones
-FR-APR-01 to 07, BR-06, BR-07
-TransferService
-Creates, schedules and completes transfers
-FR-TRF-01 to 05, BR-08, Phase 3 state model 6.2.3
-MaintenanceService
-Tickets, inspections, repairs, verification
-FR-MNT-01 to 05, Phase 3 state model 6.2.4
-EndOfLifeService
-Donation, recycling and disposal requests
-FR-DSP-01 to 05, BR-09, BR-10
-HistoryService
-Writes and reads the asset history, never edits
-FR-HST-01 to 03, BR-13
-3. User Interface Mockups
-3.1 Approval Queue (UC-11, UC-16, UC-25)
-+----------------------------------------------------------------------+
-|  Approvals                                          (Administrator)  |
-|  Show: [ Pending v ]    Type: [ All v ]                              |
-| Class diagram |
-|  ID     Type       Asset            From -> To        Waiting        |
-|  A-101  Transfer   Lab bench stool  CS -> Business    6 h            |
-|  A-099  Disposal   Old projector    Eng.              OVERDUE 52 h   |
-|  A-097  Recycling  Monitors x8      IT                20 h           |
-| Class diagram |
-|  [Open selected]                                                     |
-+----------------------------------------------------------------------+
-|  Details of A-101                                                    |
-|  Request R-0042 by ........  Asset history [View]                   |
-|  Department approval: DONE (Computer Science)                        |
-| Class diagram |
-|  Rejection reason (10+ characters): [____________________________]   |
-|                              [ Reject ]            [ Approve ]       |
-+----------------------------------------------------------------------+
-3.2 Transfer and Confirm Receipt (UC-12)
-+----------------------------------------------------------------------+
-|  Transfer T-0031                      Status: In Transit             |
-|  Asset: Lab bench stool x20          From: Computer Science          |
-|  To: Business School                 Handover: 2026-11-04, Library   |
-| Class diagram |
-|  Check the asset:                                                    |
-|  Condition on arrival: ( ) As described   ( ) Damaged or wrong       |
-|  Note: [______________________________________________]             |
-|  Photo: [Choose file]                                                |
-| Class diagram |
-|  [ Report problem ]                    [ Confirm receipt ]           |
-| Class diagram |
-|  Reminder: confirm within 14 days of handover.                       |
-+----------------------------------------------------------------------+
-3.3 Report Defect (UC-13)
-+----------------------------------------------------------------------+
-|  Report a defect                                                     |
-|  Asset ID *         [ A-2045 ]  (Projector, Room 3.12)               |
-|  Description *      [______________________________________]         |
-|  Reported condition ( ) Good  ( ) Fair  ( ) Needs repair             |
-|  Photo              [Choose file]                                    |
-|  Date               2026-10-21 (automatic)                           |
-| Class diagram |
-|  [ Cancel ]                                [ Send report ]           |
-+----------------------------------------------------------------------+
-3.4 Maintenance Ticket (UC-14, UC-24)
-+----------------------------------------------------------------------+
-|  Ticket M-0210       Asset A-2045        Status: Repair Approved     |
-|  Inspection: 2026-10-23 10:00  by M. Staff       [Change date]       |
-| Class diagram |
-|  Repair records                                                      |
-|  Date        Work done              Cost (AED)                       |
-|  2026-10-24  Replaced lamp          180.00                           |
-| Class diagram |
-|  New record:                                                         |
-|  Work done *   [__________________]  Cost (AED) * [ 0.00 ]           |
-|  Result        ( ) Repaired  ( ) Partly  ( ) Not repairable          |
-|                                          [ Save repair ]             |
-|  Verification (another staff member or the custodian):               |
-|  Condition ( ) Good  ( ) Fair  ( ) Needs repair   [ Verify ]         |
-+----------------------------------------------------------------------+
-3.5 End of Life Request (UC-16, UC-25)
-+----------------------------------------------------------------------+
-|  End of life request E-0014                                          |
-|  Asset: Old projector   Value: AED 6,200   Requested action: Dispose |
-|  Reason: [ Cannot be repaired, lamp unit damaged ]                   |
-| Class diagram |
-|  Alternatives assessed (all required for disposal)                   |
-|  [x] Reuse   [x] Transfer   [x] Repair   [x] Donation   [x] Recycling|
-| Class diagram |
-|  Approvals                                                           |
-|  Administrator:      Approved  2026-10-21                            |
-|  Finance Officer:    Waiting   (value above AED 5,000)               |
-| Class diagram |
-|  [ Reject ]                                    [ Approve ]           |
-+----------------------------------------------------------------------+
-3.6 Asset History (UC-15)
-+----------------------------------------------------------------------+
-|  History of A-2045 Projector                                         |
-| Class diagram |
-|  Date        Event          By             Related record            |
-|  2026-09-02  Registered     K. Custodian   -                         |
-|  2026-09-10  Published      K. Custodian   L-0044                    |
-|  2026-09-20  Transferred    Administrator  T-0031                    |
-|  2026-10-21  Defect         M. Student     M-0210                    |
-|  2026-10-24  Repaired       M. Staff       R-0090                    |
-| Class diagram |
-|  History cannot be edited. Corrections are added as new entries.     |
-+----------------------------------------------------------------------+
-4. Traceability
+| Class | Role | Rule it enforces |
+| --- | --- | --- |
+| AssetService | Register, edit, deactivate assets | FR-AST-01 to 10, BR-01, BR-02, BR-13 |
+| MarketplaceService | Publish, withdraw, expire listings | FR-MKT-01 to 04, BR-05 |
+| RequestService | Submit, edit, cancel, track requests | FR-REQ-01 to 09 |
+| ReservationService | Reserve and expire reservations | FR-RSV-01 to 05, BR-04 |
+| SearchService | Search, filter, sort, watchlist | FR-SRC-01 to 07, NFR-02, BR-16 |
 
-
-Diagram
-Use case
-Requirements
-Sequence 1.1
-UC-11 Approve or reject transfer
-FR-APR-01 to 07, FR-TRF-01, BR-06, BR-07
-Sequence 1.2
-UC-12 Confirm receipt
-FR-TRF-02 to 05, BR-08
-Sequence 1.3
-UC-13 Report defect
-FR-MNT-01
-Sequence 1.5
-UC-14 Record repair
-FR-MNT-03 to 05
-Sequence 1.7
-UC-15 View asset history
-FR-HST-01 to 03
-Sequence 1.6
-UC-16 Approve disposal
-FR-DSP-01 to 05, FR-APR-04, BR-09, BR-10
-Sequence 1.4
-UC-24 Schedule inspection
-FR-MNT-02
-Sequence 1.6
-UC-25 Approve donation or recycling
-FR-DSP-03 to 05, FR-APR-03
+---
+
+## 3. User Interface Mockups
+
+These are simple wireframes. Real screens will use the same fields and buttons.
+
+### 3.1 Register Asset (UC-01)
+
+```text
++----------------------------------------------------------------------+
+|  Circular Campus        [Marketplace] [My assets] [Requests]  (AC) v |
++----------------------------------------------------------------------+
+|  Register new asset                                                  |
+| Class diagram |
+|  Name *            [__________________________]                      |
+|  Tag number *      [______________]    (must be new)                 |
+|  Description       [__________________________________________]      |
+|  Category *        [ Select v ]   AI suggestion: [Laboratory chairs]  |
+|                                   Confidence: 82 %  [Accept][Change] |
+|  Quantity *        [ 1 ]    Estimated value (AED) [ 0.00 ]           |
+|  Owner / Dept *    [ Computer Science v ]                            |
+|  Location *        [______________]  Purchase date [ yyyy-mm-dd ]    |
+|  Condition *       ( ) Good  ( ) Fair  ( ) Needs repair              |
+|  Availability *    ( ) In use  ( ) Surplus                           |
+|  Photos            [Choose files]  JPG, JPEG, PNG, max 5 MB          |
+|  Documents         [Choose files]  PDF, DOCX, max 10 MB              |
+| Class diagram |
+|  * required                       [ Save as draft ]  [ Register ]    |
++----------------------------------------------------------------------+
+```
+
+### 3.2 Marketplace and Search (UC-06, UC-10)
+
+```text
++----------------------------------------------------------------------+
+|  Marketplace                                                         |
+|  Search: [ laboratory seating ____________ ] [Search]                |
+| Class diagram |
+|  Filters            |  Sort by: [ Publication date v ]               |
+|  Category   [ v ]   |  ------------------------------------------   |
+|  Condition  [ v ]   |  [img] Lab bench stool        Qty 20          |
+|  Department [ v ]   |        Computer Science, Good, AED 150 each    |
+|  Location   [ v ]   |        [View] [Reserve] [Watch]                |
+|  Quantity   [ ]-[ ] |  ------------------------------------------   |
+|  Value AED  [ ]-[ ] |  [img] Office chair           Qty 6           |
+|  Age (years)[ ]-[ ] |        Business, Fair, AED 90 each             |
+|  Status     [ v ]   |        [View] [Reserve] [Watch]                |
+|  [Apply filters]    |  ------------------------------------------   |
+|  [Save this search] |  Page 1 of 3          [Prev] [Next]            |
++----------------------------------------------------------------------+
+|  When nothing matches: "No matching resources found"                 |
++----------------------------------------------------------------------+
+```
+
+### 3.3 Create Request (UC-05)
+
+```text
++----------------------------------------------------------------------+
+|  New resource request                                                |
+| Class diagram |
+|  Category *        [ Furniture v ]                                   |
+|  Purpose *         [______________________________________]          |
+|  Specifications    [______________________________________]          |
+|  Quantity *        [ 10 ]                                            |
+|  Preferred cond.   [ Good v ]                                        |
+|  Urgency *         ( ) Low   ( ) Medium   ( ) High                   |
+|  Location *        [______________]  Required date * [ yyyy-mm-dd ]  |
+| Class diagram |
+|  [ Cancel ]                                [ Submit request ]        |
++----------------------------------------------------------------------+
+|  After submit: "Request R-0042 created. Suggested assets:"           |
+|   1. Lab bench stool (match 91 %)  [View]                            |
++----------------------------------------------------------------------+
+```
+
+### 3.4 My Requests and Reservations (UC-08, UC-09)
+
+```text
++----------------------------------------------------------------------+
+|  My requests                                                         |
+| Class diagram |
+|  ID      Asset / Need        Status               Reserved until     |
+|  R-0042  Lab seating x10     Matched / Reserved   2026-11-05         |
+|  R-0039  Projector x1        Approved             -                  |
+|  R-0031  Monitors x20        Submitted            -                  |
+| Class diagram |
+|  [View details]  [Edit]  [Cancel request]                            |
+| Class diagram |
+|  Cancel is blocked once a transfer is approved:                      |
+|  "Ask an administrator to cancel this request."                      |
++----------------------------------------------------------------------+
+```
+
+---
+
+## 4. Traceability
+
+| Diagram | Use case | Requirements |
+| --- | --- | --- |
+| Sequence 1.1 | UC-01 Register asset | FR-AST-01 to 08, FR-AI-01 to 15, NFR-04 |
+| Sequence 1.2 | UC-02 Edit asset | FR-AST-09, BR-13 |
+| Sequence 1.3 | UC-03 Publish surplus asset | FR-MKT-01, FR-MKT-02, FR-MKT-04 |
+| Sequence 1.4 | UC-04 Withdraw listing | FR-MKT-03 |
+| Sequence 1.5 | UC-05 Submit request | FR-REQ-01 to 06 |
+| Sequence 1.6 | UC-06 Search and filter assets | FR-SRC-01 to 05 |
+| Sequence 1.7, 1.11 | UC-07 Reserve asset | FR-RSV-01 to 05 |
+| Sequence 1.8 | UC-08 Track request | FR-REQ-09 |
+| Sequence 1.9 | UC-09 Cancel request | FR-REQ-07, FR-REQ-08 |
+| Sequence 1.10 | UC-10 Save asset to watchlist | FR-SRC-06, FR-SRC-07 |
+| Class diagram (AssetService) | Deactivate asset (part of UC-02) | FR-AST-10 |
