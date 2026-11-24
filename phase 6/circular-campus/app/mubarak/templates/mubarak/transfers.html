@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% block title %}Transfers{% endblock %}
+{% from "_macros.html" import status %}
+{% block body %}
+<h1 class="h3">Transfers</h1>
+<p class="text-muted small">Ownership changes only when the receiver confirms receipt (BR-06, BR-08).</p>
+<div class="table-responsive"><table class="table bg-white border">
+<thead class="table-light"><tr><th>ID</th><th>Item</th><th>From → To</th><th>Qty</th><th>Status</th><th>Handover</th><th style="min-width:280px">Action</th></tr></thead><tbody>
+{% for t in items %}
+<tr><td>T-{{ '%04d' % t.transfer_id }}</td><td><a href="{{ url_for('assets.detail', asset_id=t.asset_id) }}">{{ t.asset_name }}</a><div class="small text-muted">{{ t.tag_number }}</div></td>
+<td>{{ t.from_dept }} → {{ t.to_dept }}</td><td>{{ t.quantity }}</td><td>{{ status(t.status) }}</td>
+<td>{{ t.handover_date or '-' }}{% if t.handover_location %}<div class="small text-muted">{{ t.handover_location }}</div>{% endif %}
+  {% if t.discrepancy_note %}<div><span class="badge text-bg-danger">Note: {{ t.discrepancy_note }}</span></div>{% endif %}</td>
+<td>
+  {% if t.status == 'Approved' and (g.user.user_id == t.custodian_id or g.user.role == 'admin' or (g.user.role == 'dept_rep' and g.user.dept_id == t.from_dept_id)) %}
+  <form method="post" action="{{ url_for('workflow.schedule', transfer_id=t.transfer_id) }}" class="mb-2">
+    <div class="input-group input-group-sm"><input class="form-control" type="date" name="handover_date" required><input class="form-control" name="handover_location" placeholder="Handover place" required>
+    <button class="btn btn-outline-success">Schedule</button></div></form>
+  {% endif %}
+  {% if t.status in ('Approved','Scheduled','In Transit') and g.user.user_id == t.requester_id %}
+  <form method="post" action="{{ url_for('workflow.receive', transfer_id=t.transfer_id) }}">
+    <div class="input-group input-group-sm"><input class="form-control" name="discrepancy_note" placeholder="Anything wrong? (optional)">
+    <button class="btn btn-success">Confirm I received it</button></div></form>
+  {% endif %}
+</td></tr>
+{% else %}<tr><td colspan="7" class="text-muted">No transfers.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

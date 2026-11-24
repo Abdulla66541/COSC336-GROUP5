@@ -1,0 +1,37 @@
+{% extends "base.html" %}{% block title %}Approvals{% endblock %}
+{% block body %}
+<h1 class="h3">Approval queue</h1>
+<p class="text-muted small">You only see requests you are allowed to decide. You can never approve your own request (BR-07).</p>
+<div class="table-responsive"><table class="table bg-white border">
+<thead class="table-light"><tr><th>Request</th><th>Item</th><th>Requested by</th><th>Qty</th><th>Urgency</th><th>Purpose</th><th style="min-width:260px">Decision</th></tr></thead><tbody>
+{% for p in items %}
+<tr><td>R-{{ '%04d' % p.request_id }}</td><td><a href="{{ url_for('assets.detail', asset_id=p.asset_id) }}">{{ p.asset_name }}</a><div class="small text-muted">{{ p.tag_number }}</div></td>
+<td>{{ p.requester_name }}<div class="small text-muted">{{ p.to_dept }}</div></td><td>{{ p.quantity }}</td><td>{{ p.urgency }}</td><td>{{ p.purpose }}</td>
+<td><form method="post" action="{{ url_for('workflow.decide', approval_id=p.approval_id) }}">
+  <input class="form-control form-control-sm mb-1" name="reason" placeholder="Reason (required to reject)">
+  <button name="decision" value="Approved" class="btn btn-sm btn-success">Approve</button>
+  <button name="decision" value="Rejected" class="btn btn-sm btn-outline-danger">Reject</button></form></td></tr>
+{% else %}<tr><td colspan="7" class="text-muted">Nothing waiting for you.</td></tr>{% endfor %}
+</tbody></table></div>
+
+{% if g.user.role == 'admin' %}
+<h2 class="h5 mt-4">Donation, recycling and disposal requests</h2>
+<div class="table-responsive"><table class="table bg-white border">
+<thead class="table-light"><tr><th>Asset</th><th>Action</th><th>Reason</th><th>Alternatives considered</th><th>Value</th><th style="min-width:220px">Decision</th></tr></thead><tbody>
+{% for e in eol %}
+<tr><td>{{ e.asset_name }}<div class="small text-muted">{{ e.tag_number }} · by {{ e.requester }}</div></td><td>{{ e.action }}{% if e.recipient %} → {{ e.recipient }}{% endif %}</td>
+<td>{{ e.reason }}</td><td>{{ e.alternatives_assessment or '-' }}</td>
+<td>AED {{ '{:,.0f}'.format(e.est_value_aed * e.quantity) }}{% if e.est_value_aed * e.quantity > 5000 %}<div><span class="badge text-bg-warning">needs Finance sign-off</span></div>{% endif %}</td>
+<td><form method="post" action="{{ url_for('workflow.eol_decide', eol_id=e.eol_id) }}"><input class="form-control form-control-sm mb-1" name="reason" placeholder="Note">
+  <button name="decision" value="Approved" class="btn btn-sm btn-success">Approve</button> <button name="decision" value="Rejected" class="btn btn-sm btn-outline-danger">Reject</button></form></td></tr>
+{% else %}<tr><td colspan="6" class="text-muted">None pending.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endif %}
+
+{% if overdue %}
+<h2 class="h5 mt-4">Overdue transfers <span class="text-muted small">(over 14 days, BR-08)</span></h2>
+<table class="table table-sm bg-white border"><thead class="table-light"><tr><th>Transfer</th><th>Asset</th><th>Status</th><th>Created</th></tr></thead><tbody>
+{% for t in overdue %}<tr><td>T-{{ '%04d' % t.transfer_id }}</td><td>{{ t.asset_name }}</td><td>{{ t.status }}</td><td>{{ t.created_at }}</td></tr>{% endfor %}
+</tbody></table>
+{% endif %}
+{% endblock %}
