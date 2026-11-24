@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% block title %}Sustainability{% endblock %}
+{% block body %}
+<div class="d-flex justify-content-between align-items-center">
+  <h1 class="h3 mb-0">Sustainability dashboard</h1>
+  {% if can('ai.report') %}<a class="btn btn-outline-success" href="{{ url_for('ai.ai_reports') }}">✨ Generate AI report</a>{% endif %}
+</div>
+<p class="text-muted small mt-2">All values are <b>estimates</b> calculated by the database from recorded events. Each card shows its formula and source (BR-17).</p>
+<form class="card card-body mb-3" method="get"><div class="row g-2 align-items-end">
+  <div class="col-md-4"><label class="form-label small">From</label><input class="form-control" type="date" name="start" value="{{ start or '' }}"></div>
+  <div class="col-md-4"><label class="form-label small">To</label><input class="form-control" type="date" name="end" value="{{ end or '' }}"></div>
+  <div class="col-md-4"><button class="btn btn-success">Apply</button></div>
+</div></form>
+<div class="row g-3">
+{% for m in metrics %}
+  <div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body">
+    <div class="text-muted small">{{ m.name }}</div>
+    <div class="stat-value">{{ m.value }}{% if m.unit not in ('AED','%','items','repairs') %} <span class="fs-6 text-muted">{{ m.unit }}</span>{% endif %}</div>
+    <div class="small text-muted mt-2"><b>Formula:</b> {{ m.formula }}<br><b>Source:</b> {{ m.source }}</div>
+  </div></div></div>
+{% endfor %}
+</div>
+<h2 class="h5 mt-4">Emission factors and weights used</h2>
+<div class="table-responsive"><table class="table table-sm bg-white border small">
+<thead class="table-light"><tr><th>Category</th><th>kg CO2e per unit</th><th>Typical weight (kg)</th><th>Source</th></tr></thead><tbody>
+{% for f in factors %}<tr><td>{{ f.name }} / {{ f.subcategory }}</td><td>{{ f.kg_co2e_per_unit }}</td><td>{{ f.kg_weight_per_unit }}</td><td class="text-muted">{{ f.source }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

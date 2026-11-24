@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% block title %}AI reports{% endblock %}
+{% from "_macros.html" import status %}
+{% block body %}
+<h1 class="h3">✨ AI-generated reports</h1>
+<p class="text-muted small">The database calculates every number; the AI only writes the text. Every figure is checked against the data, and a report cannot be exported until someone reviews it (FR-AI-70).</p>
+<form method="post" class="card card-body mb-4"><div class="row g-2 align-items-end">
+  <div class="col-md-4"><label class="form-label small">From</label><input class="form-control" type="date" name="start" value="{{ default_start }}" required></div>
+  <div class="col-md-4"><label class="form-label small">To</label><input class="form-control" type="date" name="end" value="{{ default_end }}" required></div>
+  <div class="col-md-4"><button class="btn btn-success w-100">Generate summary</button></div>
+</div></form>
+<div class="table-responsive"><table class="table table-hover bg-white border">
+<thead class="table-light"><tr><th>#</th><th>Period</th><th>Created by</th><th>Created</th><th>Figure check</th><th>Status</th></tr></thead><tbody>
+{% for r in reports %}
+<tr><td><a href="{{ url_for('ai.ai_report', report_id=r.report_id) }}">AI-{{ '%03d' % r.report_id }}</a></td><td>{{ r.period_start }} → {{ r.period_end }}</td>
+<td>{{ r.creator }}</td><td>{{ r.created_at.replace('T',' ') }}</td>
+<td>{% if r.flags %}<span class="badge text-bg-danger">mismatch: {{ r.flags }}</span>{% else %}<span class="badge text-bg-success">all figures match</span>{% endif %}</td>
+<td>{{ status(r.status) }}</td></tr>
+{% else %}<tr><td colspan="6" class="text-muted">No reports yet.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

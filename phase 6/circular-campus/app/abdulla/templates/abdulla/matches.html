@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% block title %}AI matches{% endblock %}
+{% block body %}
+<h1 class="h3">Matches for R-{{ '%04d' % req.request_id }}: "{{ req.quantity }} x {{ req.category }}"</h1>
+<p class="text-muted">{{ req.purpose }}</p>
+{% if not result %}
+  <div class="alert alert-secondary">This request is <b>{{ req.status }}</b>, so no new matches are shown.</div>
+{% else %}
+<div class="ai-box mb-3">
+  <div class="ai-label">AI matching · top {{ result.content.matches|length }} · you choose</div>
+  <div class="small text-muted mt-1">How the score works: {{ result.explanation }} · model: {{ result.model_id }}</div>
+</div>
+<div class="table-responsive"><table class="table bg-white border align-middle">
+<thead class="table-light"><tr><th>Rank</th><th>Item</th><th>Location</th><th>Score</th><th>Why</th><th></th></tr></thead><tbody>
+{% for m in result.content.matches %}
+<tr><td>{{ loop.index }}</td>
+<td><a href="{{ url_for('assets.detail', asset_id=m.asset_id) }}">{{ m.asset.name }}</a><div class="small text-muted">{{ m.asset.tag_number }} · {{ m.asset.quantity }} available · {{ m.asset.condition }}</div></td>
+<td>{{ m.asset.location }}</td><td class="score">{{ m.score }}</td><td>{{ m.reason }}</td>
+<td><form method="post" action="{{ url_for('ai.reserve', request_id=req.request_id, asset_id=m.asset_id) }}">
+  <input type="hidden" name="ai_output_id" value="{{ result.output_id }}"><input type="hidden" name="ai_rank" value="{{ loop.index }}">
+  <button class="btn btn-sm btn-success text-nowrap">Accept & reserve</button></form></td></tr>
+{% else %}<tr><td colspan="6" class="text-muted">No suitable surplus found right now. Your request stays open.</td></tr>{% endfor %}
+</tbody></table></div>
+<form method="post" action="{{ url_for('ai.reject_matches', request_id=req.request_id) }}" class="card card-body mt-3">
+  <input type="hidden" name="ai_output_id" value="{{ result.output_id }}">
+  <label class="form-label small">None of these fit? Tell us why (logged to improve matching)</label>
+  <div class="input-group"><input class="form-control" name="reason" placeholder="e.g. need adjustable height"><button class="btn btn-outline-secondary">Reject all suggestions</button></div>
+</form>
+{% endif %}
+{% endblock %}
