@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}Notifications{% endblock %}
+{% block body %}
+<h1 class="h3 mb-3">Notifications</h1>
+<div class="list-group">
+{% for n in items %}
+  <div class="list-group-item {% if n.status == 'Unread' %}list-group-item-success{% endif %}">
+    <div class="d-flex justify-content-between"><span class="badge text-bg-light border">{{ n.event_type }}</span><small class="text-muted">{{ n.created_at.replace('T',' ') }}</small></div>
+    <div class="mt-1">{{ n.message }}</div>
+  </div>
+{% else %}<div class="list-group-item text-muted">No notifications.</div>{% endfor %}
+</div>
+{% endblock %}

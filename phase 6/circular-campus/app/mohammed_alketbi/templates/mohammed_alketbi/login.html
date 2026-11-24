@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% block title %}Log in{% endblock %}
+{% block body %}
+<div class="row justify-content-center g-4 mt-4">
+  <div class="col-md-5">
+    <div class="card shadow-sm"><div class="card-body p-4">
+      <h1 class="h3 text-success">♻ Circular Campus</h1>
+      <p class="text-muted">Campus resource exchange and asset life cycle system</p>
+      <form method="post">
+        <div class="mb-3"><label class="form-label">Email</label><input class="form-control" name="email" type="email" required autofocus></div>
+        <div class="mb-3"><label class="form-label">Password</label><input class="form-control" name="password" type="password" required></div>
+        <button class="btn btn-success w-100">Log in</button>
+      </form>
+    </div></div>
+  </div>
+  <div class="col-md-6">
+    <div class="card"><div class="card-body">
+      <h2 class="h6">Demo accounts</h2>
+      <p class="text-muted small mb-2">All demo passwords: <code>Password123!</code> (synthetic data only)</p>
+      <table class="table table-sm small mb-0"><thead><tr><th>Email</th><th>Role</th><th>Department</th></tr></thead><tbody>
+      {% for u in demo %}<tr><td>{{ u.email }}</td><td>{{ ROLES[u.role] }}</td><td>{{ u.dept }}</td></tr>{% endfor %}
+      </tbody></table>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

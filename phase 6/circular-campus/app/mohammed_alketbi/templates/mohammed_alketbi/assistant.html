@@ -1,0 +1,34 @@
+{% extends "base.html" %}{% block title %}Assistant{% endblock %}
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h1 class="h3 mb-0">✨ Assistant</h1>
+  {% if chat %}<form method="post" action="{{ url_for('auth.assistant_clear') }}"><button class="btn btn-sm btn-outline-secondary">Clear chat</button></form>{% endif %}
+</div>
+<p class="text-muted small">Ask about surplus items, your requests or the rules. The assistant only uses data you are allowed to see, and it never approves, transfers or disposes of anything.</p>
+<div class="card mb-3"><div class="card-body">
+  {% for m in chat %}
+    <div class="text-end mb-2"><span class="chat-q">{{ m.q }}</span></div>
+    <div class="mb-3">
+      <span class="chat-a">{{ m.a }}
+        {% for i in m.ids %}<a class="btn btn-sm btn-outline-success py-0 ms-1" href="{{ url_for('assets.detail', asset_id=i) }}">Open</a>{% endfor %}
+      </span>
+      <div class="small text-muted mt-1">AI answer · model: {{ m.model }} ·
+        <form class="d-inline" method="post" action="{{ url_for('auth.assistant_feedback', output_id=m.id) }}">
+          Was this helpful? <button name="rating" value="5" class="btn btn-link btn-sm p-0">👍</button> <button name="rating" value="1" class="btn btn-link btn-sm p-0">👎</button>
+        </form></div>
+    </div>
+  {% else %}
+    <p class="text-muted mb-1">Try:</p>
+    <ul class="text-muted small mb-0">
+      <li>Which chairs are available in Engineering?</li>
+      <li>What is the status of my requests?</li>
+      <li>How long is an item reserved?</li>
+      <li>Approve my transfer <em>(it will refuse)</em></li>
+    </ul>
+  {% endfor %}
+</div></div>
+<form method="post" class="input-group">
+  <input class="form-control" name="question" maxlength="500" placeholder="Type your question here" required autofocus>
+  <button class="btn btn-success">Send</button>
+</form>
+{% endblock %}

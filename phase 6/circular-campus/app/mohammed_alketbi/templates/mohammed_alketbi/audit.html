@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block title %}Audit log{% endblock %}
+{% block body %}
+<h1 class="h3">Audit log</h1>
+<p class="text-muted">Latest 200 entries. Rows cannot be edited or deleted (BR-13, BR-14).</p>
+<div class="table-responsive"><table class="table table-sm bg-white border small">
+<thead class="table-light"><tr><th>When</th><th>Who</th><th>Action</th><th>Record</th><th>Outcome</th><th>Old</th><th>New</th></tr></thead><tbody>
+{% for r in rows %}<tr><td class="text-nowrap">{{ r.event_time.replace('T',' ') }}</td><td>{{ r.actor_name or 'System' }}</td><td><code>{{ r.action }}</code></td>
+<td>{{ r.record_ref or '' }}</td><td>{% if r.outcome == 'OK' %}<span class="badge text-bg-success">OK</span>{% else %}<span class="badge text-bg-danger">{{ r.outcome }}</span>{% endif %}</td>
+<td class="text-muted">{{ r.old_value or '' }}</td><td class="text-muted">{{ (r.new_value or '')[:120] }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}
