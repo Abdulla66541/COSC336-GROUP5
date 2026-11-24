@@ -1,0 +1,10 @@
+{# Shared helpers for every page #}
+{% macro status(s) -%}
+  {%- set colours = {
+    'Available': 'success', 'Approved': 'success', 'Completed': 'success', 'Fulfilled': 'success', 'Verified': 'success', 'Reviewed': 'success',
+    'Reserved': 'warning', 'Pending': 'warning', 'Submitted': 'warning', 'Matched / Reserved': 'warning', 'In Transfer': 'warning',
+    'Scheduled': 'info', 'Pending Approval': 'warning', 'Not reviewed': 'warning', 'In Maintenance': 'info', 'Repair Approved': 'info',
+    'Rejected': 'danger', 'Cancelled': 'secondary', 'Expired': 'secondary', 'Disposed': 'danger', 'Recycled': 'secondary',
+    'Donated': 'secondary', 'Retired': 'secondary', 'Not Repairable': 'danger'} -%}
+  <span class="badge text-bg-{{ colours.get(s, 'light') }} {% if colours.get(s, 'light') == 'light' %}border{% endif %}">{{ s }}</span>
+{%- endmacro %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block title %}Home{% endblock %}
+{% block body %}
+<h1 class="h3 mb-4">Welcome, {{ g.user.name }}</h1>
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="stat-value">{{ stats.available }}</div><div class="text-muted small">items on the marketplace</div></div></div></div>
+  <div class="col-sm-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="stat-value">{{ stats.my_requests }}</div><div class="text-muted small">my open requests</div></div></div></div>
+  <div class="col-sm-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="stat-value">{{ stats.to_receive }}</div><div class="text-muted small">items waiting for me to receive</div></div></div></div>
+  {% if can('approval.decide') %}<div class="col-sm-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="stat-value">{{ stats.pending }}</div><div class="text-muted small">approvals pending campus-wide</div></div></div></div>{% endif %}
+</div>
+<h2 class="h5">Quick actions</h2>
+<div class="d-flex flex-wrap gap-2">
+  {% if can('search') %}<a class="btn btn-success" href="{{ url_for('assets.search') }}">Browse marketplace</a>{% endif %}
+  {% if can('request.create') %}<a class="btn btn-success" href="{{ url_for('requests.new') }}">Request a resource</a>{% endif %}
+  {% if can('asset.create') %}<a class="btn btn-success" href="{{ url_for('assets.new_asset') }}">Register an asset</a>{% endif %}
+  {% if can('approval.decide') %}<a class="btn btn-outline-secondary" href="{{ url_for('workflow.approvals') }}">Review approvals</a>{% endif %}
+  {% if can('ai.assistant') %}<a class="btn btn-outline-success" href="{{ url_for('auth.assistant') }}">✨ Ask the assistant</a>{% endif %}
+</div>
+{% endblock %}

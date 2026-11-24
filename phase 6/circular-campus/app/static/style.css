@@ -1,0 +1,8 @@
+/* Small additions on top of Bootstrap 5 */
+.ai-box { border: 1px dashed #198754; background: #f3faf6; border-radius: .5rem; padding: 1rem; }
+.ai-label { font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: #198754; font-weight: 700; }
+.score { font-weight: 700; font-size: 1.25rem; color: #198754; }
+.stat-value { font-size: 2rem; font-weight: 700; color: #198754; line-height: 1.1; }
+.chat-q { background: #e9f5ee; border-radius: .75rem; padding: .5rem .8rem; display: inline-block; }
+.chat-a { background: #fff; border: 1px solid #dee2e6; border-radius: .75rem; padding: .5rem .8rem; display: inline-block; }
+table td, table th { vertical-align: top; }
