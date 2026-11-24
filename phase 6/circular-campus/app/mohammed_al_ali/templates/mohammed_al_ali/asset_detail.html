@@ -1,0 +1,85 @@
+{% extends "base.html" %}{% block title %}{{ a.name }}{% endblock %}
+{% from "_macros.html" import status %}
+{% block body %}
+<h1 class="h3 mb-3">{{ a.name }} {{ status(a.status) }}</h1>
+<div class="card mb-3"><div class="card-body">
+  <div class="row g-3 small">
+    <div class="col-6 col-md-4"><div class="text-muted">Tag</div>{{ a.tag_number }}</div>
+    <div class="col-6 col-md-4"><div class="text-muted">Category</div>{{ a.category_name }} / {{ a.subcategory }}</div>
+    <div class="col-6 col-md-4"><div class="text-muted">Condition</div>{{ a.condition }}</div>
+    <div class="col-6 col-md-4"><div class="text-muted">Quantity</div>{{ a.quantity }}</div>
+    <div class="col-6 col-md-4"><div class="text-muted">Department</div>{{ a.dept_name }}</div>
+    <div class="col-6 col-md-4"><div class="text-muted">Custodian</div>{{ a.custodian_name }}</div>
+    <div class="col-6 col-md-4"><div class="text-muted">Location</div>{{ a.location or '-' }}</div>
+    <div class="col-6 col-md-4"><div class="text-muted">Purchased</div>{{ a.purchase_date or '-' }}</div>
+    {% if can('finance.view') or manage %}<div class="col-6 col-md-4"><div class="text-muted">Est. value per unit</div>AED {{ '{:,.0f}'.format(a.est_value_aed) }}</div>{% endif %}
+  </div>
+  {% if a.description %}<p class="mt-3 mb-0">{{ a.description }}</p>{% endif %}
+  {% if a.tags %}<p class="small text-muted mb-0">Tags: {{ a.tags }}</p>{% endif %}
+</div></div>
+
+{% if a.status == 'Available' and my_open and a.owner_dept_id != g.user.dept_id %}
+<div class="card mb-3"><div class="card-body">
+  <h2 class="h6">Reserve for one of my requests</h2>
+  <form method="post" action="{{ url_for('requests.reserve_from_asset', asset_id=a.asset_id) }}" class="row g-2">
+    <div class="col-md-8"><select class="form-select" name="request_id">{% for r in my_open %}<option value="{{ r.request_id }}">R-{{ '%04d' % r.request_id }}: {{ r.quantity }} x {{ r.category }}</option>{% endfor %}</select></div>
+    <div class="col-md-4"><button class="btn btn-success w-100">Reserve</button></div>
+  </form>
+</div></div>
+{% endif %}
+
+{% if manage %}
+<div class="card mb-3"><div class="card-body">
+  <h2 class="h6">Actions</h2>
+  <div class="d-flex flex-wrap gap-2 mb-2">
+  {% if a.status == 'Registered' %}
+    <form method="post" action="{{ url_for('assets.publish', asset_id=a.asset_id) }}"><button class="btn btn-success">Publish as surplus</button></form>
+  {% elif a.status == 'Available' %}
+    <form method="post" action="{{ url_for('assets.withdraw', asset_id=a.asset_id) }}"><button class="btn btn-outline-secondary">Withdraw listing</button></form>
+  {% endif %}
+  {% if a.status in ('Registered', 'Available', 'Retired') and can('ai.advice') %}
+    <a class="btn btn-outline-success" href="{{ url_for('workflow.advice', asset_id=a.asset_id) }}">✨ What should we do with it? (AI advice)</a>
+  {% endif %}
+  </div>
+
+  <div class="accordion" id="acts">
+  {% if a.status in ('Registered', 'Available') %}
+    <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c1">Edit</button></h3>
+    <div id="c1" class="accordion-collapse collapse" data-bs-parent="#acts"><div class="accordion-body">
+      <form method="post" action="{{ url_for('assets.edit', asset_id=a.asset_id) }}" class="row g-2 align-items-end">
+        <div class="col-md-5"><label class="form-label small">Location</label><input class="form-control" name="location" value="{{ a.location }}"></div>
+        <div class="col-md-4"><label class="form-label small">Condition</label><select class="form-select" name="condition">{% for c in conditions %}<option {% if c == a.condition %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+        <div class="col-md-3"><button class="btn btn-outline-success w-100">Save</button></div>
+      </form></div></div></div>
+
+    <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c2">Report a defect</button></h3>
+    <div id="c2" class="accordion-collapse collapse" data-bs-parent="#acts"><div class="accordion-body">
+      <form method="post" action="{{ url_for('workflow.report_defect', asset_id=a.asset_id) }}">
+        <textarea class="form-control mb-2" name="description" placeholder="What is wrong?" required></textarea>
+        <button class="btn btn-outline-warning">Send to maintenance</button>
+      </form></div></div></div>
+  {% endif %}
+  {% if a.status in ('Registered', 'Retired') %}
+    <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c3">Donate, recycle or dispose</button></h3>
+    <div id="c3" class="accordion-collapse collapse" data-bs-parent="#acts"><div class="accordion-body">
+      <form method="post" action="{{ url_for('workflow.end_of_life', asset_id=a.asset_id) }}" class="row g-2">
+        <div class="col-md-6"><label class="form-label small">Action</label><select class="form-select" name="action"><option>Donate</option><option>Recycle</option><option>Dispose</option></select></div>
+        <div class="col-md-6"><label class="form-label small">Recipient (for donation)</label><input class="form-control" name="recipient"></div>
+        <div class="col-12"><label class="form-label small">Reason *</label><input class="form-control" name="reason" required></div>
+        <div class="col-12"><label class="form-label small">Why do reuse, transfer, repair, donation and recycling not fit? (required for disposal, BR-10)</label><textarea class="form-control" name="assessment"></textarea></div>
+        <div class="col-12"><button class="btn btn-outline-danger">Request administrator approval</button></div>
+      </form></div></div></div>
+  {% endif %}
+  </div>
+</div></div>
+{% endif %}
+
+<h2 class="h5 mt-4">Life cycle history</h2>
+<p class="text-muted small">Who did what and when. History cannot be edited or deleted (BR-13).</p>
+<div class="table-responsive"><table class="table table-sm bg-white border small">
+<thead class="table-light"><tr><th>When</th><th>Event</th><th>By</th><th>Details</th><th>Link</th></tr></thead><tbody>
+{% for h in history %}<tr><td class="text-nowrap">{{ h.event_time.replace('T',' ') }}</td><td>{{ h.event_type }}</td>
+<td>{{ h.actor_name or 'System' }}{% if h.actor_role %} <span class="text-muted">({{ ROLES[h.actor_role] }})</span>{% endif %}</td>
+<td>{{ h.details or '' }}</td><td class="text-muted">{{ h.related_record or '' }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

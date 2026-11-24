@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block title %}My requests{% endblock %}
+{% from "_macros.html" import status %}
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">My requests</h1>
+  <a class="btn btn-success" href="{{ url_for('requests.new') }}">+ New request</a>
+</div>
+<div class="table-responsive"><table class="table table-hover bg-white border">
+<thead class="table-light"><tr><th>ID</th><th>What</th><th>Qty</th><th>Urgency</th><th>Needed by</th><th>Status</th><th>Item</th><th>Transfer</th><th></th></tr></thead><tbody>
+{% for r in items %}
+<tr><td>R-{{ '%04d' % r.request_id }}</td><td>{{ r.category }}<div class="small text-muted">{{ r.purpose }}</div></td>
+<td>{{ r.quantity }}</td><td>{{ r.urgency }}</td><td>{{ r.required_date }}</td>
+<td>{{ status(r.status) }}</td><td>{{ r.asset_name or '-' }}</td><td>{% if r.transfer_status %}{{ status(r.transfer_status) }}{% else %}-{% endif %}</td>
+<td class="text-nowrap">
+  {% if r.status == 'Submitted' %}<a class="btn btn-sm btn-success" href="{{ url_for('ai.matches', request_id=r.request_id) }}">See AI matches</a>{% endif %}
+  {% if r.transfer_status in ('Approved','Scheduled','In Transit') %}<a class="btn btn-sm btn-success" href="{{ url_for('workflow.transfers') }}">Confirm receipt</a>{% endif %}
+  {% if r.status in ('Submitted','Matched / Reserved') %}
+  <form class="d-inline" method="post" action="{{ url_for('requests.cancel', request_id=r.request_id) }}"><button class="btn btn-sm btn-outline-secondary">Cancel</button></form>{% endif %}
+</td></tr>
+{% else %}<tr><td colspan="9" class="text-muted">No requests yet.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}New request{% endblock %}
+{% block body %}
+<h1 class="h3 mb-3">Request a resource</h1>
+<form method="post" class="card card-body"><div class="row g-3">
+  <div class="col-md-8"><label class="form-label">What do you need? (category) *</label><input class="form-control" name="category" list="cats" required value="{{ form.get('category','') }}" placeholder="Chair, Monitor, Laptop…">
+    <datalist id="cats">{% for c in categories %}<option value="{{ c }}">{% endfor %}</datalist></div>
+  <div class="col-md-4"><label class="form-label">Quantity *</label><input class="form-control" type="number" name="quantity" min="1" value="{{ form.get('quantity', 1) }}" required></div>
+  <div class="col-12"><label class="form-label">Purpose *</label><input class="form-control" name="purpose" required value="{{ form.get('purpose','') }}" placeholder="Seating for the new biology lab"></div>
+  <div class="col-12"><label class="form-label">Specifications</label><textarea class="form-control" name="specifications" rows="2" placeholder="Size, features, compatibility…">{{ form.get('specifications','') }}</textarea></div>
+  <div class="col-md-4"><label class="form-label">Preferred condition</label><select class="form-select" name="preferred_condition">{% for c in conditions %}<option>{{ c }}</option>{% endfor %}</select></div>
+  <div class="col-md-4"><label class="form-label">Urgency *</label><select class="form-select" name="urgency">{% for u in urgencies %}<option {% if u == 'Medium' %}selected{% endif %}>{{ u }}</option>{% endfor %}</select></div>
+  <div class="col-md-4"><label class="form-label">Needed by *</label><input class="form-control" type="date" name="required_date" required value="{{ form.get('required_date','') }}"></div>
+  <div class="col-12"><label class="form-label">Delivery location</label><input class="form-control" name="location" value="{{ form.get('location','') }}" placeholder="Bio Building, Lab 4"></div>
+  <div class="col-12"><button class="btn btn-success">Submit request</button></div>
+</div></form>
+{% endblock %}

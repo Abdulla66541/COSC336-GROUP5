@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% block title %}Marketplace{% endblock %}
+{% block body %}
+<h1 class="h3 mb-3">Marketplace: published surplus</h1>
+<form class="card card-body mb-3" method="get"><div class="row g-2 align-items-end">
+  <div class="col-lg-3"><label class="form-label small">Keywords</label><input class="form-control" name="q" value="{{ f.get('q','') }}" placeholder="e.g. monitor, chairs"></div>
+  <div class="col-lg-2"><label class="form-label small">Category</label><select class="form-select" name="category_id"><option value="">All</option>
+    {% for c in categories %}<option value="{{ c.category_id }}" {% if f.get('category_id')|string == c.category_id|string %}selected{% endif %}>{{ c.label }}</option>{% endfor %}</select></div>
+  <div class="col-lg-2"><label class="form-label small">Condition</label><select class="form-select" name="condition"><option value="">Any</option>
+    {% for c in conditions %}<option {% if f.get('condition') == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+  <div class="col-lg-2"><label class="form-label small">Department</label><select class="form-select" name="dept_id"><option value="">All</option>
+    {% for d in departments %}<option value="{{ d.dept_id }}" {% if f.get('dept_id')|string == d.dept_id|string %}selected{% endif %}>{{ d.name }}</option>{% endfor %}</select></div>
+  <div class="col-lg-2"><label class="form-label small">Sort</label><select class="form-select" name="sort">
+    {% for k, v in [('newest','Newest'),('name','Name'),('value','Value')] %}<option value="{{ k }}" {% if f.get('sort') == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+  <div class="col-lg-1"><button class="btn btn-success w-100">Search</button></div>
+</div></form>
+<p class="text-muted small">{{ results|length }} item(s). To get one, <a href="{{ url_for('requests.new') }}">submit a request</a>; the AI suggests the best matches.</p>
+<div class="table-responsive"><table class="table table-hover bg-white border">
+<thead class="table-light"><tr><th>Tag</th><th>Item</th><th>Category</th><th>Qty</th><th>Condition</th><th>Department</th><th>Location</th></tr></thead><tbody>
+{% for a in results %}
+<tr><td>{{ a.tag_number }}</td><td><a href="{{ url_for('assets.detail', asset_id=a.asset_id) }}">{{ a.name }}</a><div class="small text-muted">{{ a.description }}</div></td>
+<td>{{ a.category_name }} / {{ a.subcategory }}</td><td>{{ a.quantity }}</td><td>{{ a.condition }}</td><td>{{ a.dept_name }}</td><td>{{ a.location }}</td></tr>
+{% else %}<tr><td colspan="7" class="text-muted">Nothing matches these filters.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}
